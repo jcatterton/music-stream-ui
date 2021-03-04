@@ -1,0 +1,10 @@
+<mat-dialog-content class="wrapper">
+  <mat-form-field [formGroup]="form">
+    <mat-label>Name</mat-label>
+    <input matInput formControlName="name">
+  </mat-form-field>
+  <div class="buttons">
+    <button mat-stroked-button (click)="addPlaylist()" [disabled]="form.controls['name'].value === ''">Add Playlist</button>
+    <button mat-stroked-button (click)="cancel()">Cancel</button>
+  </div>
+</mat-dialog-content>

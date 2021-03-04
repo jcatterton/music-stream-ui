@@ -1,0 +1,37 @@
+import { Component } from '@angular/core';
+import { TrackService } from "../../services/track/track.service";
+import { Track } from "../../models/track";
+import { MatDialogRef } from "@angular/material/dialog";
+import { PlaylistService } from "../../services/playlist/playlist.service";
+import { Album } from "../../models/album";
+
+@Component({
+  selector: 'app-album-info',
+  templateUrl: './album-info.component.html',
+  styleUrls: ['./album-info.component.scss']
+})
+export class AlbumInfoComponent {
+  album: Album;
+
+  constructor(
+    private trackService: TrackService,
+    private playlistService: PlaylistService,
+    private dialogRef: MatDialogRef<AlbumInfoComponent>,
+  ) { }
+
+  playAll(): void {
+    this.dialogRef.close({output: this.album.tracks, type: "multiple"});
+  }
+
+  playOne(track: Track): void {
+    this.dialogRef.close({output: track, type: "single" });
+  }
+
+  close(): void {
+    this.dialogRef.close();
+  }
+
+  goToArtist(): void {
+    this.dialogRef.close({output: this.album.artist, type: "artist"})
+  }
+}

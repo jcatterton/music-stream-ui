@@ -1,0 +1,34 @@
+.table-wrapper {
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+}
+
+table {
+  width: 100%;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.clickable-row:hover {
+  background-color: darkgray;
+  cursor: pointer;
+}
+
+.no-tracks {
+  display: flex;
+  justify-content: center;
+
+  h2 {
+    font-family: sans-serif;
+    color: red;
+  }
+}
+
+.wrapper {
+  font-family: sans-serif;
+  max-height: 80vh;
+}

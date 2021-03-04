@@ -1,0 +1,56 @@
+<div class="wrapper">
+  <mat-dialog-content>
+    <h2>{{ playlist.name }}</h2>
+    <div class="buttons">
+      <button mat-stroked-button (click)="playAll()" [disabled]="tracks === undefined || tracks === null || tracks.length === 0">Play All</button>
+      <button mat-stroked-button (click)="deletePlaylist()">Delete Playlist</button>
+    </div>
+    <div class="table-wrapper">
+      <table
+        mat-table
+        class="track-table"
+        [dataSource]="tracks"
+        matSort
+      >
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+          <td mat-cell *matCellDef="let element">{{ element.name }}</td>
+        </ng-container>
+        <ng-container matColumnDef="artist">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Artist</th>
+          <td mat-cell *matCellDef="let element">{{ element.artist }}</td>
+        </ng-container>
+        <ng-container matColumnDef="album">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="header-align-right">Album</th>
+          <td mat-cell *matCellDef="let element">{{ element.album }}</td>
+        </ng-container>
+        <ng-container matColumnDef="options">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let element">
+            <button mat-icon-button (click)="$event.stopPropagation()" [matMenuTriggerFor]="menu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item (click)="removeTrackFromPlaylist(element)">Remove from playlist</button>
+            </mat-menu>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="tracks">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Tracks</th>
+          <td mat-cell *matCellDef="let element">{{ element.tracks ? element.tracks?.length : 0 }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="['name', 'artist', 'album', 'options']; sticky: true"></tr>
+        <tr
+          mat-row
+          class="clickable-row"
+          *matRowDef="let row; columns: ['name', 'artist', 'album', 'options']"
+          (click)="playOne(row)"
+        ></tr>
+      </table>
+      <div *ngIf="tracks === undefined || tracks === null || tracks.length === 0" class="no-tracks">
+        <h2>Playlist has no tracks</h2>
+      </div>
+    </div>
+  </mat-dialog-content>
+</div>

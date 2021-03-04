@@ -1,10 +1,10 @@
 {
-  "/music-stream-api/*": {
-    "target": "http://192.168.1.15:30642",
+  "/api/*": {
+    "target": "http://192.168.1.15:31208/api",
     "secure": "false",
     "changeOrigin": true,
     "pathRewrite": {
-      "^/music-stream-api": ""
+      "^/api": ""
     }
   }
 }

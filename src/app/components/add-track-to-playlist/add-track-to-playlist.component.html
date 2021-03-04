@@ -1,0 +1,18 @@
+<div>
+  <mat-dialog-content>
+    <h3>Select the playlist to add {{ trackName }} to</h3>
+    <mat-form-field [formGroup]="form">
+      <mat-label>Select playlist</mat-label>
+      <mat-select formControlName="id">
+        <mat-option
+          *ngFor="let playlist of playlists"
+          [value]="playlist.id"
+        >{{ playlist.name }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <div class="buttons">
+      <button mat-stroked-button (click)="cancel()">Cancel</button>
+      <button mat-stroked-button [disabled]="form.controls['id'].value === ''" (click)="onOk()">Add Track</button>
+    </div>
+  </mat-dialog-content>
+</div>

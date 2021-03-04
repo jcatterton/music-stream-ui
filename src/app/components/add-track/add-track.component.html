@@ -1,0 +1,21 @@
+<mat-dialog-content class="wrapper">
+  <div>
+    <input type=file (change)="setFile($event)" accept="{{ acceptedFormats }}" />
+  </div>
+  <mat-form-field [formGroup]="form">
+    <mat-label>Name</mat-label>
+    <input matInput formControlName="name">
+  </mat-form-field>
+  <mat-form-field [formGroup]="form">
+    <mat-label>Artist</mat-label>
+    <input matInput formControlName="artist">
+  </mat-form-field>
+  <mat-form-field [formGroup]="form">
+    <mat-label>Album</mat-label>
+    <input matInput formControlName="album">
+  </mat-form-field>
+  <div class="buttons">
+    <button mat-stroked-button (click)="addTrack()" [disabled]="file === null || file === undefined">Add Song</button>
+    <button mat-stroked-button (click)="cancel()">Cancel</button>
+  </div>
+</mat-dialog-content>

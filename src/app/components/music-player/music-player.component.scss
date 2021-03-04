@@ -1,0 +1,96 @@
+.table-card {
+  width: 80%;
+  margin: 0 auto !important;
+}
+
+.track-table {
+  width: 100%;
+  overflow: auto;
+  height: 300px;
+}
+
+.player-card {
+  width: 35%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: space-between;
+}
+
+.mat-column-name {
+  width: 30%;
+}
+
+.mat-column-album {
+  width: 30%;
+}
+
+.mat-column-artist {
+  width: 30%;
+}
+
+.mat-column-options {
+  width: 10%;
+}
+
+.mat-cell-name {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.album-art {
+  width: 300px;
+}
+
+.table-wrapper {
+  width: 55%;
+}
+
+.table-container {
+  max-height: 80vh;
+  overflow-y: scroll;
+}
+
+.buttons,
+.player-buttons {
+  margin-top: 10px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+
+  button {
+    width: 19%;
+  }
+}
+
+.clickable-row:hover {
+  background-color: darkgray;
+  cursor: pointer;
+}
+
+.delete-icon {
+  cursor: pointer;
+}
+
+.play-buttons {
+  margin-top: 5px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+
+  button {
+    width: 19%;
+  }
+}
+
+.searchbar-wrapper {
+  width: 100%;
+}
+
+.searchbar {
+  width: 100%;
+}
