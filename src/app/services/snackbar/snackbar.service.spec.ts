@@ -1,5 +1,5 @@
-import {TestBed} from '@angular/core/testing';
-import {SnackBarPanelClass, SnackbarService} from './snackbar.service';
+import { TestBed } from '@angular/core/testing';
+import { SnackBarPanelClass, SnackbarService } from './snackbar.service';
 import { MatSnackBar, MatSnackBarConfig, MatSnackBarModule } from "@angular/material/snack-bar";
 
 class MockMatSnackBar {

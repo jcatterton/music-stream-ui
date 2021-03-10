@@ -32,4 +32,8 @@ export class TrackService {
   getTracks(): Observable<Track[]> {
     return this.http.get(`${this.baseURL}/tracks`)
   }
+
+  getAudioUrl(track: Track) {
+    return `${this.baseURL}/track/${track.id}`
+  }
 }

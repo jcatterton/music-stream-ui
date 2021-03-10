@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from "@angular/material/dialog";
 import { FormBuilder, FormGroup } from "@angular/forms";
-import { Track, UploadTrackRequest } from "../../models/track";
+import { UploadTrackRequest } from "../../models/track";
 
 @Component({
   selector: 'app-add-track',

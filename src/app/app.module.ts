@@ -15,6 +15,7 @@ import { AddTrackToPlaylistComponent } from "./components/add-track-to-playlist/
 import { PlaylistInfoComponent } from "./components/playlist-info/playlist-info.component";
 import { AlbumInfoComponent } from "./components/album-info/album-info.component";
 import { ArtistInfoComponent } from "./components/artist-info/artist-info.component";
+import { UpdateTrackComponent } from "./components/update-track/update-track.component";
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import { ArtistInfoComponent } from "./components/artist-info/artist-info.compon
     AddTrackToPlaylistComponent,
     PlaylistInfoComponent,
     AlbumInfoComponent,
-    ArtistInfoComponent
+    ArtistInfoComponent,
+    UpdateTrackComponent
   ],
   imports: [
     BrowserModule,

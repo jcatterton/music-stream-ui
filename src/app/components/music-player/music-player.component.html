@@ -53,10 +53,6 @@
           mat-stroked-button
           (click)="setRowDef('playlists')"
         >Playlists</button>
-        <button
-          mat-stroked-button
-          (click)="addTrack()"
-        >Add Song</button>
       </div>
       <div class="play-buttons">
         <button
@@ -65,7 +61,13 @@
         >Play All</button>
         <button
           mat-stroked-button
+          (click)="addTrack()"
+          *ngIf="rowDef === 'tracks'"
+        >Add Song</button>
+        <button
+          mat-stroked-button
           (click)="addPlaylist()"
+          *ngIf="rowDef === 'playlists'"
         >New Playlist</button>
       </div>
       <div class="table-container">
@@ -96,6 +98,7 @@
               </button>
               <mat-menu #menu="matMenu">
                 <button mat-menu-item *ngIf="rowDef==='tracks'" (click)="addTrackToPlaylist(element)">Add to Playlist</button>
+                <button mat-menu-item *ngIf="rowDef==='tracks'" (click)="updateTrack(element)">Update Track Info</button>
                 <button mat-menu-item (click)="delete(element)">Delete</button>
               </mat-menu>
             </td>

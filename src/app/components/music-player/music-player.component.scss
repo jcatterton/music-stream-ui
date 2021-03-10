@@ -1,3 +1,5 @@
+@import "../../app.component.scss";
+
 .table-card {
   width: 80%;
   margin: 0 auto !important;
@@ -6,7 +8,6 @@
 .track-table {
   width: 100%;
   overflow: auto;
-  height: 300px;
 }
 
 .player-card {
@@ -22,15 +23,15 @@
 }
 
 .mat-column-name {
-  width: 30%;
+  width: 50%;
 }
 
 .mat-column-album {
-  width: 30%;
+  width: 20%;
 }
 
 .mat-column-artist {
-  width: 30%;
+  width: 20%;
 }
 
 .mat-column-options {
@@ -51,7 +52,7 @@
 }
 
 .table-container {
-  max-height: 80vh;
+  max-height: 70vh;
   overflow-y: scroll;
 }
 
@@ -61,9 +62,10 @@
   width: 100%;
   display: flex;
   justify-content: space-between;
+  gap: 10px;
 
   button {
-    width: 19%;
+    width: 25%;
   }
 }
 
@@ -79,11 +81,11 @@
 .play-buttons {
   margin-top: 5px;
   display: flex;
-  gap: 10px;
-  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
 
   button {
-    width: 19%;
+    width: 24%;
   }
 }
 

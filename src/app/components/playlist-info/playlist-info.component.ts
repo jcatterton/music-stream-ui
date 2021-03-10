@@ -5,7 +5,7 @@ import { Track } from "../../models/track";
 import { MatDialog, MatDialogRef } from "@angular/material/dialog";
 import { PlaylistService } from "../../services/playlist/playlist.service";
 import { SnackBarPanelClass, SnackbarService } from "../../services/snackbar/snackbar.service";
-import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
+import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 
 @Component({
   selector: 'app-playlist-info',
@@ -30,7 +30,7 @@ export class PlaylistInfoComponent implements OnInit {
 
   getTracks(): void {
     this.trackService.getTracks().subscribe(t => {
-      this.tracks = t.filter(track => this.playlist.tracks?.some(e => e === track.id))
+      this.tracks = t.filter(track => this.playlist.tracks.some(e => e === track.id))
     });
   }
 
@@ -67,7 +67,7 @@ export class PlaylistInfoComponent implements OnInit {
     d.afterClosed().subscribe(response => {
       if (response) {
         this.playlistService.deleteTrackFromPlaylist(this.playlist.id, track.id).subscribe(() => {
-          this.snackBarService.showMessage("Track successfully removed from playlist", SnackBarPanelClass.fail);
+          this.snackBarService.showMessage("Track successfully removed from playlist", SnackBarPanelClass.success);
           this.playlist.tracks = this.playlist.tracks.filter(function(t) {
             return t !== track.id;
           });

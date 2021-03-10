@@ -1,1 +1,6 @@
 @import "../styles.scss";
+
+mat-dialog-content {
+  overflow: hidden;
+  max-height: 75vh;
+}

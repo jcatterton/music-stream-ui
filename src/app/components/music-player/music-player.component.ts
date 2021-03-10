@@ -1,22 +1,24 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {Track, UploadTrackRequest} from "../../models/track";
-import {TrackService} from "../../services/track/track.service";
-import {SnackBarPanelClass, SnackbarService} from "../../services/snackbar/snackbar.service";
-import {MatDialog} from "@angular/material/dialog";
-import {AddTrackComponent} from "../add-track/add-track.component";
-import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
-import {AddPlaylistComponent} from "../add-playlist/add-playlist.component";
-import {PlaylistService} from "../../services/playlist/playlist.service";
-import {Playlist} from "../../models/playlist";
-import {MatTableDataSource} from "@angular/material/table";
-import {AddTrackToPlaylistComponent} from "../add-track-to-playlist/add-track-to-playlist.component";
-import {PlaylistInfoComponent} from "../playlist-info/playlist-info.component";
-import {MatSort, MatSortable} from "@angular/material/sort";
-import {FormBuilder} from "@angular/forms";
-import {Album} from "../../models/album";
-import {AlbumInfoComponent} from "../album-info/album-info.component";
-import {Artist} from "../../models/artist";
-import {ArtistInfoComponent} from "../artist-info/artist-info.component";
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Track, UploadTrackRequest } from "../../models/track";
+import { TrackService } from "../../services/track/track.service";
+import { SnackBarPanelClass, SnackbarService } from "../../services/snackbar/snackbar.service";
+import { MatDialog } from "@angular/material/dialog";
+import { AddTrackComponent } from "../add-track/add-track.component";
+import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
+import { AddPlaylistComponent } from "../add-playlist/add-playlist.component";
+import { PlaylistService } from "../../services/playlist/playlist.service";
+import { Playlist } from "../../models/playlist";
+import { MatTableDataSource } from "@angular/material/table";
+import { AddTrackToPlaylistComponent } from "../add-track-to-playlist/add-track-to-playlist.component";
+import { PlaylistInfoComponent } from "../playlist-info/playlist-info.component";
+import { MatSort } from "@angular/material/sort";
+import { Album } from "../../models/album";
+import { AlbumInfoComponent } from "../album-info/album-info.component";
+import { Artist } from "../../models/artist";
+import { ArtistInfoComponent } from "../artist-info/artist-info.component";
+import { Title } from "@angular/platform-browser";
+import { UpdateTrackComponent } from "../update-track/update-track.component";
+import { RowDef } from "../../mocks/rowdef";
 
 @Component({
   selector: 'app-music-player',
@@ -49,10 +51,10 @@ export class MusicPlayerComponent implements OnInit {
     private snackBarService: SnackbarService,
     private dialogService: MatDialog,
     private playlistService: PlaylistService,
-    private formBuilder: FormBuilder
+    private titleService: Title
   ) { }
 
-  async ngOnInit() {
+  ngOnInit(): void {
     this.loadTracks();
     this.shuffle = false;
     this.loop = false;
@@ -76,23 +78,65 @@ export class MusicPlayerComponent implements OnInit {
     });
   }
 
-  handleClick(row) {
-    if (this.rowDef === "tracks") {
+  loadAlbums(): void {
+    let albums = [];
+    this.tracks.forEach(t => {
+      if (!albums.some(a => a.name === t.album)) {
+        albums = albums.concat({ name: t.album, artist: t.artist, tracks: [t] });
+      } else {
+        let album = albums.find(a => a.name === t.album);
+        album.tracks = album.tracks.concat(t);
+      }
+    });
+    this.albums = albums;
+    this.loadArtists();
+  }
+
+  loadArtists(): void {
+    let artists = [];
+    this.albums.forEach(a => {
+      if (!artists.some(art => art.name === a.artist)) {
+        artists = artists.concat({ name: a.artist, albums: [a] });
+      } else {
+        let artist = artists.find(art => art.name === a.artist);
+        artist.albums = artist.albums.concat(a);
+      }
+    });
+    this.artists = artists;
+    if (this.firstLoad) {
+      this.setRowDef(RowDef.tracks);
+      this.firstLoad = false;
+    } else {
+      this.refreshDataSource();
+    }
+  }
+
+  handleClick(row): void {
+    if (this.rowDef === RowDef.tracks) {
+      this.playableTracks = [];
+      this.playableIndex = 0;
       this.playTrack(row);
-    } else if (this.rowDef === "playlists") {
+    } else if (this.rowDef === RowDef.playlists) {
       this.openPlaylistInfo(row);
-    } else if (this.rowDef === "albums") {
+    } else if (this.rowDef === RowDef.albums) {
       this.openAlbumInfo(row);
-    } else if (this.rowDef === "artists") {
+    } else if (this.rowDef === RowDef.artists) {
       this.openArtistInfo(row);
     }
   }
 
   playTrack(track: Track): void {
-    this.$player.src = `http://192.168.1.15:30356/track/${track.id}`;
+    this.$player.src = this.trackService.getAudioUrl(track);
     this.$player.load();
     this.$player.play();
     this.activeTrack = track;
+    this.titleService.setTitle(`${this.activeTrack.name} - ${this.activeTrack.artist}`);
+  }
+
+  playAll(): void {
+    this.playableTracks = this.shuffle ? MusicPlayerComponent.shuffleTracks(this.tracks) : this.tracks;
+    this.playableIndex = 0;
+    this.playTrack(this.playableTracks[this.playableIndex]);
   }
 
   openPlaylistInfo(playlist: Playlist): void {
@@ -154,32 +198,6 @@ export class MusicPlayerComponent implements OnInit {
     });
   }
 
-  skip(): void {
-    if (this.playableTracks && this.playableTracks.length !== 0) {
-      this.playableIndex++;
-      if (this.playableIndex < this.playableTracks.length) {
-        this.playTrack(this.playableTracks[this.playableIndex]);
-      } else if (this.loop) {
-        this.playableIndex = 0;
-        this.playTrack(this.playableTracks[this.playableIndex]);
-      } else {
-        this.playableIndex--;
-      }
-    }
-  }
-
-  back(): void {
-    this.playableIndex--;
-    if (this.playableIndex >= 0) {
-      this.playTrack(this.playableTracks[this.playableIndex]);
-    } else if (this.loop) {
-      this.playableIndex = this.playableTracks.length - 1;
-      this.playTrack(this.playableTracks[this.playableIndex]);
-    } else {
-      this.playableIndex++;
-    }
-  }
-
   addTrack(): void {
     const dialogRef = this.dialogService.open(AddTrackComponent, { width: "700px", disableClose: false });
     dialogRef.afterClosed().subscribe((track: UploadTrackRequest) => {
@@ -218,9 +236,9 @@ export class MusicPlayerComponent implements OnInit {
   }
 
   delete(row): void {
-    if (this.rowDef === "tracks") {
+    if (this.rowDef === RowDef.tracks) {
       this.deleteTrack(row);
-    } else if (this.rowDef === "playlists") {
+    } else if (this.rowDef === RowDef.playlists) {
       this.deletePlaylist(row);
     }
   }
@@ -257,42 +275,6 @@ export class MusicPlayerComponent implements OnInit {
     });
   }
 
-  toggleShuffle(): void {
-    this.shuffle = !this.shuffle;
-    if (this.shuffle) {
-      this.playableTracks = this.playableTracks.filter(t => t.id !== this.activeTrack.id);
-      this.playableTracks = MusicPlayerComponent.shuffleTracks(this.playableTracks);
-      this.playableTracks = [this.activeTrack].concat(this.playableTracks);
-      this.playableIndex = 0;
-    }
-  }
-
-  toggleLoop(): void {
-    this.loop = !this.loop;
-  }
-
-  playAll(): void {
-    this.playableTracks = this.shuffle ? MusicPlayerComponent.shuffleTracks(this.tracks) : this.tracks;
-    this.playableIndex = 0;
-    this.playTrack(this.playableTracks[this.playableIndex]);
-  }
-
-  audioEnded(): void {
-    if (this.playableTracks !== [] && this.playableIndex < this.playableTracks.length) {
-      this.playableIndex++;
-      this.playTrack(this.playableTracks[this.playableIndex]);
-    } else if (this.playableIndex === this.playableTracks.length) {
-      if (!this.loop) {
-        this.playableTracks = [];
-      } else {
-        this.playableIndex = 0;
-        this.playTrack(this.playableTracks[this.playableIndex]);
-      }
-    } else if (this.playableTracks === []) {
-      this.playTrack(this.activeTrack);
-    }
-  }
-
   addPlaylist(): void {
     const dialogRef = this.dialogService.open(AddPlaylistComponent, { width: "700px", disableClose: false });
     dialogRef.afterClosed().subscribe((playlistName: string) => {
@@ -311,7 +293,7 @@ export class MusicPlayerComponent implements OnInit {
   }
 
   addTrackToPlaylist(track: Track): void {
-    if (this.playlists !== []) {
+    if (this.playlists.length !== 0) {
       const dialogRef = this.dialogService.open(AddTrackToPlaylistComponent, {width: "700px", disableClose: false});
       dialogRef.componentInstance.playlists = this.playlists;
       dialogRef.componentInstance.trackName = track.name;
@@ -331,20 +313,24 @@ export class MusicPlayerComponent implements OnInit {
         }
       });
     } else {
-      this.snackBarService.showMessage("No playlists exists", SnackBarPanelClass.fail);
+      this.snackBarService.showMessage("No playlists exist", SnackBarPanelClass.fail);
     }
   }
 
-  sortChange(sortEvent): void {
-    if (this.rowDef === "tracks") {
-      this.sortTracks(sortEvent);
-    } else if (this.rowDef === "playlists") {
-      this.sortPlaylists(sortEvent);
-    } else if (this.rowDef === "albums") {
-      this.sortAlbums(sortEvent);
-    } else if (this.rowDef === "artists") {
-      this.sortArtists(sortEvent);
-    }
+  updateTrack(track: Track): void {
+    const dialogRef = this.dialogService.open(UpdateTrackComponent, {width: "700px", disableClose: false});
+    dialogRef.componentInstance.track = track;
+    dialogRef.afterClosed().subscribe(output => {
+      if (output !== undefined) {
+        this.trackService.updateTrack(track.id, output).subscribe(() => {
+          this.snackBarService.showMessage("Track updated successfully", SnackBarPanelClass.success);
+          this.loadTracks();
+        }, err => {
+          console.log(err);
+          this.snackBarService.showMessage("Error updating track", SnackBarPanelClass.fail);
+        });
+      }
+    });
   }
 
   sortArtists(sortEvent): void {
@@ -473,48 +459,19 @@ export class MusicPlayerComponent implements OnInit {
     }
   }
 
-  loadAlbums(): void {
-    let albums = [];
-    this.tracks.forEach(t => {
-      if (!albums.some(a => a.name === t.album)) {
-        albums = albums.concat({ name: t.album, artist: t.artist, tracks: [t] });
-      } else {
-        let album = albums.find(a => a.name === t.album);
-        album.tracks = album.tracks.concat(t);
-      }
-    });
-    this.albums = albums;
-    this.loadArtists();
-  }
-
-  loadArtists(): void {
-    let artists = [];
-    this.albums.forEach(a => {
-      if (!artists.some(art => art.name === a.artist)) {
-        artists = artists.concat({ name: a.artist, albums: [a] });
-      } else {
-        let artist = artists.find(art => art.name === a.artist);
-        artist.albums = artist.albums.concat(a);
-      }
-    });
-    this.artists = artists;
-    if (this.firstLoad) {
-      this.setRowDef("tracks");
-      this.firstLoad = false;
-    } else {
-      this.refreshDataSource();
-    }
-  }
-
   refreshDataSource(): void {
-    if (this.rowDef === "tracks") {
+    if (this.rowDef === RowDef.tracks) {
       this.dataSource.data = this.tracks;
-    } else if (this.rowDef === "playlists") {
+      this.sortTracks({active: "", direction: ""});
+    } else if (this.rowDef === RowDef.playlists) {
       this.dataSource.data = this.playlists;
-    } else if (this.rowDef === "artists") {
+      this.sortPlaylists({active: "", direction: ""});
+    } else if (this.rowDef === RowDef.artists) {
       this.dataSource.data = this.artists;
-    } else if (this.rowDef === "albums") {
+      this.sortArtists({active: "", direction: ""});
+    } else if (this.rowDef === RowDef.albums) {
       this.dataSource.data = this.albums;
+      this.sortAlbums({active: "", direction: ""})
     }
   }
 
@@ -523,48 +480,111 @@ export class MusicPlayerComponent implements OnInit {
       return;
     }
     this.rowDef = rowDef;
-    if (this.rowDef === "tracks") {
+    if (this.rowDef === RowDef.tracks) {
       this.columns = ['name', 'artist', 'album', 'options'];
-      this.dataSource.data = this.tracks;
-      this.sortTracks({active: "", direction: ""});
-    } else if (rowDef === "playlists") {
+    } else if (rowDef === RowDef.playlists) {
       this.columns = ['name', 'tracks', 'options'];
-      this.dataSource.data = this.playlists;
-    } else if (rowDef === "albums") {
+    } else if (rowDef === RowDef.albums) {
       this.columns = ['name', 'artist', 'tracks'];
-      this.dataSource.data = this.albums;
-    } else if (rowDef === "artists") {
+    } else if (rowDef === RowDef.artists) {
       this.columns = ['name', 'albums'];
-      this.dataSource.data = this.artists;
     }
-    this
+    this.refreshDataSource();
   }
 
-  filterChanged(filterValue: string) {
+  filterChanged(filterValue: string): void {
     filterValue = filterValue.toLowerCase();
-    if (this.rowDef === "tracks") {
+    if (this.rowDef === RowDef.tracks) {
       this.dataSource.data = this.tracks.filter(t =>
         t.name.toLowerCase().includes(filterValue) ||
         t.artist.toLowerCase().includes(filterValue) ||
         t.album.toLowerCase().includes(filterValue)
       );
-    } else if (this.rowDef === "playlists") {
+    } else if (this.rowDef === RowDef.playlists) {
       this.dataSource.data = this.playlists.filter(p =>
         p.name.toLowerCase().includes(filterValue)
       )
-    } else if (this.rowDef === "albums") {
+    } else if (this.rowDef === RowDef.albums) {
       this.dataSource.data = this.albums.filter(a =>
         a.name.toLowerCase().includes(filterValue) ||
         a.artist.toLowerCase().includes(filterValue)
       )
-    } else if (this.rowDef === "artists") {
+    } else if (this.rowDef === RowDef.artists) {
       this.dataSource.data = this.artists.filter(a =>
         a.name.toLowerCase().includes(filterValue)
       )
     }
   }
 
-  static shuffleTracks(tracks: Track[]) {
+  sortChange(sortEvent): void {
+    if (this.rowDef === RowDef.tracks) {
+      this.sortTracks(sortEvent);
+    } else if (this.rowDef === RowDef.playlists) {
+      this.sortPlaylists(sortEvent);
+    } else if (this.rowDef === RowDef.albums) {
+      this.sortAlbums(sortEvent);
+    } else if (this.rowDef === RowDef.artists) {
+      this.sortArtists(sortEvent);
+    }
+  }
+
+  audioEnded(): void {
+    if (this.playableTracks.length > 0 && (this.playableIndex < this.playableTracks.length)) {
+      this.playableIndex++;
+      this.playTrack(this.playableTracks[this.playableIndex]);
+    } else if (this.playableTracks.length > 0 && (this.playableIndex === this.playableTracks.length)) {
+      if (!this.loop) {
+        this.playableTracks = [];
+      } else {
+        this.playableIndex = 0;
+        this.playTrack(this.playableTracks[this.playableIndex]);
+      }
+    } else if (this.playableTracks.length === 0 && this.loop) {
+      this.playTrack(this.activeTrack);
+    }
+  }
+
+  skip(): void {
+    if (this.playableTracks && this.playableTracks.length !== 0) {
+      this.playableIndex++;
+      if (this.playableIndex < this.playableTracks.length) {
+        this.playTrack(this.playableTracks[this.playableIndex]);
+      } else if (this.loop) {
+        this.playableIndex = 0;
+        this.playTrack(this.playableTracks[this.playableIndex]);
+      } else {
+        this.playableIndex--;
+      }
+    }
+  }
+
+  back(): void {
+    this.playableIndex--;
+    if (this.playableIndex >= 0) {
+      this.playTrack(this.playableTracks[this.playableIndex]);
+    } else if (this.loop) {
+      this.playableIndex = this.playableTracks.length - 1;
+      this.playTrack(this.playableTracks[this.playableIndex]);
+    } else {
+      this.playableIndex++;
+    }
+  }
+
+  toggleShuffle(): void {
+    this.shuffle = !this.shuffle;
+    if (this.shuffle) {
+      this.playableTracks = this.playableTracks.filter(t => t.id !== this.activeTrack.id);
+      this.playableTracks = MusicPlayerComponent.shuffleTracks(this.playableTracks);
+      this.playableTracks = [this.activeTrack].concat(this.playableTracks);
+      this.playableIndex = 0;
+    }
+  }
+
+  toggleLoop(): void {
+    this.loop = !this.loop;
+  }
+
+  static shuffleTracks(tracks: Track[]): Track[] {
     let currentIndex = tracks.length, temporaryValue, randomIndex;
 
     while (0 !== currentIndex) {

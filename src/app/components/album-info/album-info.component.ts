@@ -1,8 +1,6 @@
 import { Component } from '@angular/core';
-import { TrackService } from "../../services/track/track.service";
 import { Track } from "../../models/track";
 import { MatDialogRef } from "@angular/material/dialog";
-import { PlaylistService } from "../../services/playlist/playlist.service";
 import { Album } from "../../models/album";
 
 @Component({
@@ -14,8 +12,6 @@ export class AlbumInfoComponent {
   album: Album;
 
   constructor(
-    private trackService: TrackService,
-    private playlistService: PlaylistService,
     private dialogRef: MatDialogRef<AlbumInfoComponent>,
   ) { }
 
