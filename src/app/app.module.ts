@@ -16,6 +16,9 @@ import { PlaylistInfoComponent } from "./components/playlist-info/playlist-info.
 import { AlbumInfoComponent } from "./components/album-info/album-info.component";
 import { ArtistInfoComponent } from "./components/artist-info/artist-info.component";
 import { UpdateTrackComponent } from "./components/update-track/update-track.component";
+import { AddTrackFromYoutubeComponent } from "./components/add-track-from-youtube/add-track-from-youtube.component";
+import { LoginComponent } from "./components/login/login.component";
+import { SecurePipe } from "./pipes/secure.pipe";
 
 @NgModule({
   declarations: [
@@ -28,7 +31,10 @@ import { UpdateTrackComponent } from "./components/update-track/update-track.com
     PlaylistInfoComponent,
     AlbumInfoComponent,
     ArtistInfoComponent,
-    UpdateTrackComponent
+    UpdateTrackComponent,
+    AddTrackFromYoutubeComponent,
+    LoginComponent,
+    SecurePipe
   ],
   imports: [
     BrowserModule,

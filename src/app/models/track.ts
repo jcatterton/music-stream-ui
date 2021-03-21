@@ -12,3 +12,10 @@ export interface UploadTrackRequest {
   album: string;
   audioFile: File;
 }
+
+export interface YoutubeRequest {
+  name: string;
+  artist: string;
+  album: string;
+  youtubeLink: string;
+}

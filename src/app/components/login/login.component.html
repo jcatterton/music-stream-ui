@@ -1,0 +1,15 @@
+<mat-dialog-content class="wrapper">
+  <div class="header">Log In!</div>
+  <mat-form-field [formGroup]="form">
+    <mat-label>Username</mat-label>
+    <input matInput formControlName="username">
+  </mat-form-field>
+  <mat-form-field [formGroup]="form">
+    <mat-label>Password</mat-label>
+    <input matInput formControlName="password" [type]="show ? 'text' : 'password'">
+    <mat-icon (click)="toggleShowPassword()" class="toggle">remove_red_eye</mat-icon>
+  </mat-form-field>
+  <div class="buttons">
+    <button mat-stroked-button (click)="submit()" [disabled]="form.controls['username'].value === '' || form.controls['password'].value === ''">Log In</button>
+  </div>
+</mat-dialog-content>

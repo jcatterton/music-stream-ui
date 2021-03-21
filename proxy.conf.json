@@ -1,10 +1,18 @@
 {
   "/api/*": {
-    "target": "http://192.168.1.15:31208/api",
-    "secure": "false",
+    "target": "http://localhost:8002",
+    "secure": false,
     "changeOrigin": true,
     "pathRewrite": {
       "^/api": ""
+    }
+  },
+  "/auth/*": {
+    "target": "http://localhost:8003",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/auth": ""
     }
   }
 }

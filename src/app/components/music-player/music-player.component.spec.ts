@@ -1,7 +1,13 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { MusicPlayerComponent } from './music-player.component';
 import { HttpClientTestingModule } from "@angular/common/http/testing";
-import { MockMatDialog, MockPlaylistService, MockSnackBarService, MockTrackService } from "../../mocks/services";
+import {
+  MockLoginService,
+  MockMatDialog,
+  MockPlaylistService,
+  MockSnackBarService,
+  MockTrackService
+} from "../../mocks/services";
 import { TrackService } from "../../services/track/track.service";
 import { PlaylistService } from "../../services/playlist/playlist.service";
 import { SnackBarPanelClass, SnackbarService } from "../../services/snackbar/snackbar.service";
@@ -16,9 +22,14 @@ import { PlaylistInfoComponent } from "../playlist-info/playlist-info.component"
 import { AlbumInfoComponent } from "../album-info/album-info.component";
 import { ArtistInfoComponent } from "../artist-info/artist-info.component";
 import { AddTrackComponent } from "../add-track/add-track.component";
-import { Track, UploadTrackRequest } from "../../models/track";
+import { Track, UploadTrackRequest, YoutubeRequest } from "../../models/track";
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 import { RowDef } from "../../mocks/rowdef";
+import { AddTrackFromYoutubeComponent } from "../add-track-from-youtube/add-track-from-youtube.component";
+import { LoginService } from "../../services/login/login.service";
+import { RouterTestingModule } from "@angular/router/testing";
+import { Router } from "@angular/router";
+import { SecurePipe } from "../../pipes/secure.pipe";
 
 describe('MusicPlayerComponent', () => {
   let component: MusicPlayerComponent;
@@ -28,17 +39,26 @@ describe('MusicPlayerComponent', () => {
   let fixture: ComponentFixture<MusicPlayerComponent>;
   let titleService: Title;
   let dialogService: MatDialog;
+  let loginService: MockLoginService;
+  let router;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ MusicPlayerComponent ],
+      declarations: [
+        MusicPlayerComponent,
+        SecurePipe
+      ],
       providers: [
-        HttpClientTestingModule,
         { provide: TrackService, useClass: MockTrackService },
         { provide: PlaylistService, useClass: MockPlaylistService },
         { provide: SnackbarService, useClass: MockSnackBarService },
         { provide: MatDialog, useClass: MockMatDialog },
         { provide: titleService, useClass: Title },
+        { provide: LoginService, useClass: MockLoginService }
+      ],
+      imports: [
+        RouterTestingModule.withRoutes([{ path: "**", component: class {} }]),
+        HttpClientTestingModule,
       ]
     })
     .compileComponents();
@@ -52,6 +72,8 @@ describe('MusicPlayerComponent', () => {
     snackBarService = TestBed.inject(SnackbarService);
     titleService = TestBed.inject(Title);
     dialogService = TestBed.inject(MatDialog);
+    loginService = TestBed.inject(LoginService);
+    router = TestBed.inject(Router);
     fixture.detectChanges();
   });
 
@@ -465,6 +487,94 @@ describe('MusicPlayerComponent', () => {
     });
   });
 
+  describe("addTrackFromYoutube", () => {
+    it("should call dialogService open", () => {
+      const dialogRef = jasmine.createSpyObj({
+        afterClosed: of(),
+        componentInstance: {}
+      });
+      const dialogSpy = spyOn(dialogService, "open").and.returnValue(dialogRef);
+      component.addTrackFromYoutube();
+      expect(dialogSpy).toHaveBeenCalledWith(AddTrackFromYoutubeComponent, { width: "700px", disableClose: false });
+    });
+
+    it("should call dialogService open if adding duplicate trap", () => {
+      const dialogRef = jasmine.createSpyObj({
+        afterClosed: of({ name: MockTrack.mockTrack1.name, album: MockTrack.mockTrack1.album, artist: MockTrack.mockTrack1.artist, youtubeLink: "test" } as YoutubeRequest),
+        componentInstance: {}
+      });
+      const confirmationDialog = jasmine.createSpyObj({
+        afterClosed: of(),
+        componentInstance: {}
+      });
+      component.tracks = MockTrack.mockTracks;
+      const dialogSpy = spyOn(dialogService, "open").and.returnValues(dialogRef, confirmationDialog);
+      component.addTrackFromYoutube();
+      expect(dialogSpy).toHaveBeenCalled();
+      expect(dialogSpy).toHaveBeenCalledWith(ConfirmationDialogComponent, { width: "700px", disableClose: false })
+    });
+
+    it("should call trackService uploadTrackFromYoutube if duplicate track response is truthy", () => {
+      const ytRequest = { name: MockTrack.mockTrack1.name, album: MockTrack.mockTrack1.album, artist: MockTrack.mockTrack1.artist, youtubeLink: "test" };
+      const dialogRef = jasmine.createSpyObj({
+        afterClosed: of(ytRequest),
+        componentInstance: {}
+      });
+      const confirmationDialog = jasmine.createSpyObj({
+        afterClosed: of(true),
+        componentInstance: {}
+      });
+      component.tracks = MockTrack.mockTracks;
+      spyOn(dialogService, "open").and.returnValues(dialogRef, confirmationDialog);
+      const uploadTrackSpy = spyOn(trackService, "uploadTrackFromYoutube").and.callThrough();
+      component.addTrackFromYoutube();
+      expect(uploadTrackSpy).toHaveBeenCalledWith(ytRequest)
+    });
+
+    it("should call snackBarService if uploadTrackFromYoutube errors after duplicate track response is truthy", () => {
+      const dialogRef = jasmine.createSpyObj({
+        afterClosed: of({ name: MockTrack.mockTrack1.name, album: MockTrack.mockTrack1.album, artist: MockTrack.mockTrack1.artist, youtubeLink: "test" } as YoutubeRequest),
+        componentInstance: {}
+      });
+      const confirmationDialog = jasmine.createSpyObj({
+        afterClosed: of(true),
+        componentInstance: {}
+      });
+      component.tracks = MockTrack.mockTracks;
+      spyOn(dialogService, "open").and.returnValues(dialogRef, confirmationDialog);
+      spyOn(trackService, "uploadTrackFromYoutube").and.returnValue(throwError("test"));
+      const snackBarSpy = spyOn(snackBarService, "showMessage");
+      component.addTrackFromYoutube();
+      expect(snackBarSpy).toHaveBeenCalledWith("Error adding tracks", SnackBarPanelClass.fail);
+    });
+
+    it("should call trackService uploadTrack if no duplicate", () => {
+      const ytRequest = { name: MockTrack.mockTrack1.name, album: MockTrack.mockTrack1.album, artist: MockTrack.mockTrack1.artist, youtubeLink: "test" };
+      const dialogRef = jasmine.createSpyObj({
+        afterClosed: of(ytRequest),
+        componentInstance: {}
+      });
+      component.tracks = [];
+      spyOn(dialogService, "open").and.returnValues(dialogRef);
+      const uploadTrackSpy = spyOn(trackService, "uploadTrackFromYoutube").and.callThrough();
+      component.addTrackFromYoutube();
+      expect(uploadTrackSpy).toHaveBeenCalledWith(ytRequest)
+    });
+
+    it("should call snackBarService showMessage if uploadTrack errors on no duplicate", () => {
+      const dialogRef = jasmine.createSpyObj({
+        afterClosed: of({ name: MockTrack.mockTrack1.name, album: MockTrack.mockTrack1.album, artist: MockTrack.mockTrack1.artist, youtubeLink: "test" } as YoutubeRequest),
+        componentInstance: {}
+      });
+      component.tracks = [];
+      spyOn(dialogService, "open").and.returnValues(dialogRef);
+      spyOn(trackService, "uploadTrackFromYoutube").and.returnValue(throwError("test"));
+      const snackBarSpy = spyOn(snackBarService, "showMessage");
+      component.addTrackFromYoutube();
+      expect(snackBarSpy).toHaveBeenCalledWith("Error adding tracks", SnackBarPanelClass.fail);
+    });
+  });
+
   describe("delete", () => {
     it("should call deleteTrack if rowDef is 'tracks'", () => {
       component.rowDef = RowDef.tracks;
@@ -618,7 +728,7 @@ describe('MusicPlayerComponent', () => {
       spyOn(playlistService, "createPlaylist").and.returnValue(throwError("test"));
       const snackBarSpy = spyOn(snackBarService, "showMessage");
       component.addPlaylist();
-      expect(snackBarSpy).toHaveBeenCalledWith("Error adding tracks", SnackBarPanelClass.fail);
+      expect(snackBarSpy).toHaveBeenCalledWith("Error adding playlist", SnackBarPanelClass.fail);
     });
   });
 
@@ -1127,7 +1237,8 @@ describe('MusicPlayerComponent', () => {
       ];
       component.dataSource.data = component.tracks;
       component.rowDef = RowDef.tracks;
-      component.filterChanged("test");
+      component.$filter.value = "test";
+      component.filterChanged();
       expect(component.dataSource.data.length).toEqual(3);
       expect(JSON.stringify(component.dataSource.data[0])).toEqual(JSON.stringify({ id: "test", name: "testName", artist: "artist", album: "album", audioFile: "test" }));
       expect(JSON.stringify(component.dataSource.data[1])).toEqual(JSON.stringify({ id: "test", name: "name", artist: "testArtist", album: "album", audioFile: "test" }));
@@ -1142,7 +1253,8 @@ describe('MusicPlayerComponent', () => {
       ];
       component.dataSource.data = component.playlists;
       component.rowDef = RowDef.playlists;
-      component.filterChanged("test");
+      component.$filter.value = "test";
+      component.filterChanged();
       expect(component.dataSource.data.length).toEqual(2);
       expect(JSON.stringify(component.dataSource.data[0])).toEqual(JSON.stringify({ id: "test", name: "test1", tracks: [] }));
       expect(JSON.stringify(component.dataSource.data[1])).toEqual(JSON.stringify({ id: "test", name: "test2", tracks: [] }));
@@ -1156,7 +1268,8 @@ describe('MusicPlayerComponent', () => {
       ];
       component.dataSource.data = component.albums;
       component.rowDef = RowDef.albums;
-      component.filterChanged("test");
+      component.$filter.value = "test";
+      component.filterChanged();
       expect(component.dataSource.data.length).toEqual(2);
       expect(JSON.stringify(component.dataSource.data[0])).toEqual(JSON.stringify({ name: "test1", artist: "1", tracks: [] }));
       expect(JSON.stringify(component.dataSource.data[1])).toEqual(JSON.stringify({ name: "2", artist: "testArtist2", tracks: [] }));
@@ -1170,7 +1283,8 @@ describe('MusicPlayerComponent', () => {
       ];
       component.dataSource.data = component.artists;
       component.rowDef = RowDef.artists;
-      component.filterChanged("test");
+      component.$filter.value = "test";
+      component.filterChanged();
       expect(component.dataSource.data.length).toEqual(2);
       expect(JSON.stringify(component.dataSource.data[0])).toEqual(JSON.stringify({ name: "test1", albums: [] }));
       expect(JSON.stringify(component.dataSource.data[1])).toEqual(JSON.stringify({ name: "test3", albums: [] }));

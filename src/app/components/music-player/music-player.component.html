@@ -1,11 +1,14 @@
 <mat-card class="table-card">
+  <div class="spinner-wrapper" *ngIf="loading">
+    <mat-spinner class="loading-spinner"></mat-spinner>
+  </div>
   <div class="wrapper">
     <mat-card class="player-card">
       <h1>{{ activeTrack?.name }}</h1>
       <img class="album-art" src="https://www.wmhbradio.org/wp-content/uploads/2016/07/music-placeholder.png">
       <h2>{{ activeTrack?.artist }}</h2>
       <h3>{{ activeTrack?.album }}</h3>
-      <audio #stream controls (ended)="audioEnded()" [preload]="'auto'"></audio>
+      <audio #stream controls (ended)="audioEnded()" [preload]="'auto'" [attr.src]="this.activeTrack ? (getActiveTrackUrl() | secure | async) : null"></audio>
       <div class="player-buttons">
         <button
           mat-icon-button
@@ -30,10 +33,11 @@
         <mat-label>Search</mat-label>
         <mat-icon matPrefix>search</mat-icon>
         <input
+          #filter
           matInput
           placeholder="Search"
           class="searchbar"
-          (keyup)="filterChanged($event.target.value)"
+          (keyup)="filterChanged()"
         />
       </mat-form-field>
       <div class="buttons">
@@ -63,7 +67,12 @@
           mat-stroked-button
           (click)="addTrack()"
           *ngIf="rowDef === 'tracks'"
-        >Add Song</button>
+        >Upload Song</button>
+        <button
+          mat-stroked-button
+          (click)="addTrackFromYoutube()"
+          *ngIf="rowDef === 'tracks'"
+        >Add Song From Youtube</button>
         <button
           mat-stroked-button
           (click)="addPlaylist()"
@@ -112,7 +121,7 @@
             <td mat-cell *matCellDef="let element">{{ element.albums ? element.albums?.length : 0 }}</td>
           </ng-container>
 
-          <tr mat-header-row *matHeaderRowDef="columns; sticky: true"></tr>
+          <tr class="header-row" mat-header-row *matHeaderRowDef="columns; sticky: !loading"></tr>
           <tr
             mat-row
             class="clickable-row"

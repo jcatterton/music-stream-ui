@@ -70,4 +70,13 @@ describe('TrackService', () => {
       expect(result).toEqual(`${service.baseURL}/track/${MockTrack.mockTrack1.id}`);
     });
   });
+
+  describe("uploadTrackFromYoutube", () => {
+    it("should call http post", () => {
+      const postSpy = spyOn(httpService, "post");
+      const ytRequest = { name: "testName", artist: "testArtist", album: "testAlbum", youtubeLink: "testLink" };
+      service.uploadTrackFromYoutube(ytRequest);
+      expect(postSpy).toHaveBeenCalledWith(`${service.baseURL}/youtube/track`, ytRequest);
+    });
+  });
 });

@@ -1,10 +1,11 @@
 import { Observable, of } from "rxjs";
 import { MatDialogConfig } from "@angular/material/dialog";
 import { ComponentType } from "@angular/cdk/portal";
-import { Track} from "../models/track";
+import { Track, YoutubeRequest } from "../models/track";
 import { MockTrack } from "./tracks";
 import { Playlist } from "../models/playlist";
 import { SnackBarPanelClass } from "../services/snackbar/snackbar.service";
+import { LoginRequest } from "../models/user";
 
 export class MockMatDialog {
   open(component: ComponentType<any>, config?: MatDialogConfig) {
@@ -16,6 +17,8 @@ export class MockMatDialog {
   }
 
   close(dialogResult?: any): void {};
+
+  closeAll(): void {};
 }
 
 export class MockTrackService {
@@ -41,6 +44,10 @@ export class MockTrackService {
 
   getAudioUrl(track: Track): string {
     return "test";
+  }
+
+  uploadTrackFromYoutube(track: YoutubeRequest) {
+    return of(null);
   }
 }
 
@@ -84,6 +91,16 @@ export class MockHttpService {
   }
 
   delete<T>(url: string): Observable<any> {
+    return of(null);
+  }
+}
+
+export class MockLoginService {
+  generateToken(user: LoginRequest): Observable<any> {
+    return of(null);
+  }
+
+  validateToken(): Observable<any> {
     return of(null);
   }
 }

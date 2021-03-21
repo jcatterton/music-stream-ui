@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpService } from "../http/http.service";
-import { Track } from "../../models/track";
+import { Track, YoutubeRequest } from "../../models/track";
 import { Observable } from "rxjs";
 
 @Injectable({
@@ -35,5 +35,9 @@ export class TrackService {
 
   getAudioUrl(track: Track) {
     return `${this.baseURL}/track/${track.id}`
+  }
+
+  uploadTrackFromYoutube(track: YoutubeRequest) {
+    return this.http.post(`${this.baseURL}/youtube/track`, track);
   }
 }

@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { Track, UploadTrackRequest } from "../../models/track";
+import {Track, UploadTrackRequest, YoutubeRequest} from "../../models/track";
 import { TrackService } from "../../services/track/track.service";
 import { SnackBarPanelClass, SnackbarService } from "../../services/snackbar/snackbar.service";
 import { MatDialog } from "@angular/material/dialog";
@@ -19,6 +19,10 @@ import { ArtistInfoComponent } from "../artist-info/artist-info.component";
 import { Title } from "@angular/platform-browser";
 import { UpdateTrackComponent } from "../update-track/update-track.component";
 import { RowDef } from "../../mocks/rowdef";
+import { AddTrackFromYoutubeComponent } from "../add-track-from-youtube/add-track-from-youtube.component";
+import { MatInput } from "@angular/material/input";
+import { LoginService } from "../../services/login/login.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-music-player',
@@ -31,6 +35,7 @@ export class MusicPlayerComponent implements OnInit {
   playableTracks: Track[];
   playableIndex: number;
   $player: HTMLAudioElement;
+  $filter: MatInput;
   shuffle: boolean;
   loop: boolean;
   playlists: Playlist[];
@@ -40,9 +45,13 @@ export class MusicPlayerComponent implements OnInit {
   albums: Album[];
   artists: Artist[];
   firstLoad = true;
+  loading = false;
 
   @ViewChild('stream') set playerRef(ref: ElementRef<HTMLAudioElement>) {
     this.$player = ref.nativeElement;
+  }
+  @ViewChild('filter') set filterRef(ref: ElementRef<MatInput>) {
+    this.$filter = ref.nativeElement;
   }
   @ViewChild(MatSort) sort: MatSort;
 
@@ -51,16 +60,23 @@ export class MusicPlayerComponent implements OnInit {
     private snackBarService: SnackbarService,
     private dialogService: MatDialog,
     private playlistService: PlaylistService,
-    private titleService: Title
+    private titleService: Title,
+    private loginService: LoginService,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
-    this.loadTracks();
-    this.shuffle = false;
-    this.loop = false;
+    this.loginService.validateToken().subscribe(() => {
+      this.loadTracks();
+      this.shuffle = false;
+      this.loop = false;
+    }, () => {
+      this.router.navigate([""]);
+    });
   }
 
   loadTracks(): void {
+    this.loading = true;
     this.trackService.getTracks().subscribe(tracks => {
       this.tracks = tracks;
       this.loadPlaylists();
@@ -103,6 +119,7 @@ export class MusicPlayerComponent implements OnInit {
       }
     });
     this.artists = artists;
+    this.loading = false;
     if (this.firstLoad) {
       this.setRowDef(RowDef.tracks);
       this.firstLoad = false;
@@ -126,11 +143,14 @@ export class MusicPlayerComponent implements OnInit {
   }
 
   playTrack(track: Track): void {
-    this.$player.src = this.trackService.getAudioUrl(track);
+    this.activeTrack = track;
     this.$player.load();
     this.$player.play();
-    this.activeTrack = track;
     this.titleService.setTitle(`${this.activeTrack.name} - ${this.activeTrack.artist}`);
+  }
+
+  getActiveTrackUrl(): string {
+    return this.trackService.getAudioUrl(this.activeTrack);
   }
 
   playAll(): void {
@@ -210,10 +230,13 @@ export class MusicPlayerComponent implements OnInit {
               const fd = new FormData();
               fd.set("input", track.audioFile);
               fd.set("body", MusicPlayerComponent.buildBodyFromTrack(track));
+              this.loading = true;
               this.trackService.uploadTrack(fd).subscribe(() => {
+                this.loading = false;
                 this.snackBarService.showMessage("Track added successfully", SnackBarPanelClass.success);
                 this.loadTracks();
               }, err => {
+                this.loading = false;
                 console.log(err);
                 this.snackBarService.showMessage("Error adding tracks", SnackBarPanelClass.fail)
               })
@@ -223,10 +246,50 @@ export class MusicPlayerComponent implements OnInit {
           const fd = new FormData();
           fd.set("input", track.audioFile);
           fd.set("body", MusicPlayerComponent.buildBodyFromTrack(track));
+          this.loading = true;
           this.trackService.uploadTrack(fd).subscribe(() => {
+            this.loading = false;
             this.snackBarService.showMessage("Track added successfully", SnackBarPanelClass.success);
             this.loadTracks();
           }, err => {
+            this.loading = false;
+            console.log(err);
+            this.snackBarService.showMessage("Error adding tracks", SnackBarPanelClass.fail)
+          })
+        }
+      }
+    });
+  }
+
+  addTrackFromYoutube(): void {
+    const dialogRef = this.dialogService.open(AddTrackFromYoutubeComponent, { width: "700px", disableClose: false });
+    dialogRef.afterClosed().subscribe((track: YoutubeRequest) => {
+      if (track) {
+        if (this.tracks.some(t => t.name.toLowerCase() === track.name.toLowerCase() && t.album.toLowerCase() === track.album.toLowerCase() && t.artist.toLowerCase() === track.artist.toLowerCase())) {
+          const d = this.dialogService.open(ConfirmationDialogComponent, {width: "700px", disableClose: false});
+          d.componentInstance.message = "A track with the same name, artist, and album already exists. Add anyway?";
+          d.afterClosed().subscribe(response => {
+            if (response) {
+              this.loading = true;
+              this.trackService.uploadTrackFromYoutube(track).subscribe(() => {
+                this.loading = false;
+                this.snackBarService.showMessage("Track added successfully", SnackBarPanelClass.success);
+                this.loadTracks();
+              }, err => {
+                this.loading = false;
+                console.log(err);
+                this.snackBarService.showMessage("Error adding tracks", SnackBarPanelClass.fail)
+              })
+            }
+          })
+        } else {
+          this.loading = true;
+          this.trackService.uploadTrackFromYoutube(track).subscribe(() => {
+            this.loading = false;
+            this.snackBarService.showMessage("Track added successfully", SnackBarPanelClass.success);
+            this.loadTracks();
+          }, err => {
+            this.loading = false;
             console.log(err);
             this.snackBarService.showMessage("Error adding tracks", SnackBarPanelClass.fail)
           })
@@ -248,10 +311,13 @@ export class MusicPlayerComponent implements OnInit {
     dialogRef.componentInstance.message = `Are you sure you want to delete ${track.name}?`;
     dialogRef.afterClosed().subscribe(response => {
       if (response) {
+        this.loading = true;
         this.trackService.deleteTrack(track.id).subscribe(() => {
+          this.loading = false;
           this.snackBarService.showMessage("Track deleted successfully", SnackBarPanelClass.success);
           this.loadTracks();
         }, err => {
+          this.loading = false;
           console.log(err);
           this.snackBarService.showMessage("Error deleting track", SnackBarPanelClass.fail);
         });
@@ -264,10 +330,13 @@ export class MusicPlayerComponent implements OnInit {
     dialogRef.componentInstance.message = `Are you sure you want to delete ${playlist.name}?`;
     dialogRef.afterClosed().subscribe(response => {
       if (response) {
+        this.loading = true;
         this.playlistService.deletePlaylist(playlist.id).subscribe(() => {
+          this.loading = false;
           this.snackBarService.showMessage("Playlist deleted successfully", SnackBarPanelClass.success);
           this.loadTracks();
         }, err => {
+          this.loading = false;
           console.log(err);
           this.snackBarService.showMessage("Error deleting playlist", SnackBarPanelClass.fail);
         });
@@ -281,12 +350,15 @@ export class MusicPlayerComponent implements OnInit {
       if (this.playlists?.some(p => p.name === playlistName)) {
         this.snackBarService.showMessage("Playlist with that name already exists", SnackBarPanelClass.fail);
       } else if (playlistName !== undefined) {
+        this.loading = true;
         this.playlistService.createPlaylist(playlistName).subscribe(() => {
+          this.loading = false;
           this.snackBarService.showMessage("Playlist added successfully", SnackBarPanelClass.success);
           this.loadTracks();
         }, err => {
+          this.loading = false;
           console.log(err);
-          this.snackBarService.showMessage("Error adding tracks", SnackBarPanelClass.fail)
+          this.snackBarService.showMessage("Error adding playlist", SnackBarPanelClass.fail)
         })
       }
     });
@@ -302,10 +374,13 @@ export class MusicPlayerComponent implements OnInit {
           if (this.playlists.find(p => p.id === playlistId).tracks?.some(t => t === track.id)) {
             this.snackBarService.showMessage("Track already exists in playlist", SnackBarPanelClass.fail);
           } else {
+            this.loading = true;
             this.playlistService.addTrackToPlaylist(playlistId, track.id).subscribe(() => {
+              this.loading = false;
               this.snackBarService.showMessage("Track successfully added to playlist", SnackBarPanelClass.success);
               this.loadTracks();
             }, err => {
+              this.loading = false;
               console.log(err);
               this.snackBarService.showMessage("Error adding track to playlist", SnackBarPanelClass.fail);
             });
@@ -322,10 +397,13 @@ export class MusicPlayerComponent implements OnInit {
     dialogRef.componentInstance.track = track;
     dialogRef.afterClosed().subscribe(output => {
       if (output !== undefined) {
+        this.loading = true;
         this.trackService.updateTrack(track.id, output).subscribe(() => {
+          this.loading = false;
           this.snackBarService.showMessage("Track updated successfully", SnackBarPanelClass.success);
           this.loadTracks();
         }, err => {
+          this.loading = false;
           console.log(err);
           this.snackBarService.showMessage("Error updating track", SnackBarPanelClass.fail);
         });
@@ -473,6 +551,7 @@ export class MusicPlayerComponent implements OnInit {
       this.dataSource.data = this.albums;
       this.sortAlbums({active: "", direction: ""})
     }
+    this.filterChanged();
   }
 
   setRowDef(rowDef: string): void {
@@ -492,8 +571,8 @@ export class MusicPlayerComponent implements OnInit {
     this.refreshDataSource();
   }
 
-  filterChanged(filterValue: string): void {
-    filterValue = filterValue.toLowerCase();
+  filterChanged(): void {
+    const filterValue = this.$filter?.value.toLowerCase();
     if (this.rowDef === RowDef.tracks) {
       this.dataSource.data = this.tracks.filter(t =>
         t.name.toLowerCase().includes(filterValue) ||
