@@ -1,35 +1,172 @@
-<mat-card class="table-card">
+<div #Desktop *ngIf="!mobile">
+  <mat-card class="table-card">
+    <div class="spinner-wrapper" *ngIf="loading">
+      <mat-spinner class="loading-spinner"></mat-spinner>
+    </div>
+    <div class="wrapper">
+      <mat-card class="player-card">
+        <h1>{{ activeTrack?.name }}</h1>
+        <img class="album-art" src="https://www.wmhbradio.org/wp-content/uploads/2016/07/music-placeholder.png">
+        <h2>{{ activeTrack?.artist }}</h2>
+        <h3>{{ activeTrack?.album }}</h3>
+        <audio #stream controls (ended)="audioEnded()" [preload]="'auto'" [attr.src]="this.activeTrack ? (getActiveTrackUrl() | secure | async) : null"></audio>
+        <div class="player-buttons">
+          <button
+            mat-icon-button
+            (click)="back()"
+          ><mat-icon>skip_previous</mat-icon></button>
+          <button
+            mat-icon-button
+            (click)="toggleShuffle()"
+          ><mat-icon [color]="shuffle ? 'warn' : null">shuffle</mat-icon></button>
+          <button
+            mat-icon-button
+            (click)="toggleLoop()"
+          ><mat-icon [color]="loop ? 'warn' : null">loop</mat-icon></button>
+          <button
+            mat-icon-button
+            (click)="skip()"
+          ><mat-icon>skip_next</mat-icon></button>
+        </div>
+      </mat-card>
+      <div class="table-wrapper">
+        <mat-form-field appearance="outline" class="searchbar-wrapper">
+          <mat-label>Search</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input
+            #filter
+            matInput
+            placeholder="Search"
+            class="searchbar"
+            (keyup)="filterChanged()"
+          />
+        </mat-form-field>
+        <div class="buttons">
+          <button
+            mat-stroked-button
+            (click)="setRowDef('tracks')"
+          >Songs</button>
+          <button
+            mat-stroked-button
+            (click)="setRowDef('albums')"
+          >Albums</button>
+          <button
+            mat-stroked-button
+            (click)="setRowDef('artists')"
+          >Artists</button>
+          <button
+            mat-stroked-button
+            (click)="setRowDef('playlists')"
+          >Playlists</button>
+        </div>
+        <div class="play-buttons">
+          <button
+            mat-stroked-button
+            (click)="playAll()"
+          >Play All</button>
+          <button
+            mat-stroked-button
+            (click)="addTrack()"
+            *ngIf="rowDef === 'tracks'"
+          >Upload Song</button>
+          <button
+            mat-stroked-button
+            (click)="addTrackFromYoutube()"
+            *ngIf="rowDef === 'tracks'"
+          >Add Song From Youtube</button>
+          <button
+            mat-stroked-button
+            (click)="addPlaylist()"
+            *ngIf="rowDef === 'playlists'"
+          >New Playlist</button>
+        </div>
+        <div class="table-container">
+          <table
+            mat-table
+            class="track-table"
+            [dataSource]="dataSource"
+            matSort
+            (matSortChange)="sortChange($event)"
+          >
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+              <td mat-cell *matCellDef="let element">{{ element.name }}</td>
+            </ng-container>
+            <ng-container matColumnDef="artist">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Artist</th>
+              <td mat-cell *matCellDef="let element">{{ element.artist }}</td>
+            </ng-container>
+            <ng-container matColumnDef="album">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="header-align-right">Album</th>
+              <td mat-cell *matCellDef="let element">{{ element.album }}</td>
+            </ng-container>
+            <ng-container matColumnDef="options">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let element">
+                <button mat-icon-button (click)="$event.stopPropagation()" [matMenuTriggerFor]="menu">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #menu="matMenu">
+                  <button mat-menu-item *ngIf="rowDef==='tracks'" (click)="addTrackToPlaylist(element)">Add to Playlist</button>
+                  <button mat-menu-item *ngIf="rowDef==='tracks'" (click)="updateTrack(element)">Update Track Info</button>
+                  <button mat-menu-item (click)="delete(element)">Delete</button>
+                </mat-menu>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="tracks">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Tracks</th>
+              <td mat-cell *matCellDef="let element">{{ element.tracks ? element.tracks?.length : 0 }}</td>
+            </ng-container>
+            <ng-container matColumnDef="albums">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Albums</th>
+              <td mat-cell *matCellDef="let element">{{ element.albums ? element.albums?.length : 0 }}</td>
+            </ng-container>
+
+            <tr class="header-row" mat-header-row *matHeaderRowDef="columns; sticky: !loading"></tr>
+            <tr
+              mat-row
+              class="clickable-row"
+              *matRowDef="let row; columns: columns"
+              (click)="handleClick(row)"
+            ></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </mat-card>
+</div>
+
+<div #Mobile *ngIf="mobile">
   <div class="spinner-wrapper" *ngIf="loading">
     <mat-spinner class="loading-spinner"></mat-spinner>
   </div>
-  <div class="wrapper">
-    <mat-card class="player-card">
-      <h1>{{ activeTrack?.name }}</h1>
-      <img class="album-art" src="https://www.wmhbradio.org/wp-content/uploads/2016/07/music-placeholder.png">
-      <h2>{{ activeTrack?.artist }}</h2>
-      <h3>{{ activeTrack?.album }}</h3>
-      <audio #stream controls (ended)="audioEnded()" [preload]="'auto'" [attr.src]="this.activeTrack ? (getActiveTrackUrl() | secure | async) : null"></audio>
-      <div class="player-buttons">
-        <button
-          mat-icon-button
-          (click)="back()"
-        ><mat-icon>skip_previous</mat-icon></button>
-        <button
-          mat-icon-button
-          (click)="toggleShuffle()"
-        ><mat-icon [color]="shuffle ? 'warn' : null">shuffle</mat-icon></button>
-        <button
-          mat-icon-button
-          (click)="toggleLoop()"
-        ><mat-icon [color]="loop ? 'warn' : null">loop</mat-icon></button>
-        <button
-          mat-icon-button
-          (click)="skip()"
-        ><mat-icon>skip_next</mat-icon></button>
-      </div>
-    </mat-card>
-    <div class="table-wrapper">
-      <mat-form-field appearance="outline" class="searchbar-wrapper">
+  <mat-card class="player-card-mobile">
+    <h1>{{ activeTrack?.name }}</h1>
+    <h2>{{ activeTrack?.artist }}</h2>
+    <h3>{{ activeTrack?.album }}</h3>
+    <audio #stream controls (ended)="audioEnded()" [preload]="'auto'" [attr.src]="this.activeTrack ? (getActiveTrackUrl() | secure | async) : null"></audio>
+    <div class="player-buttons-mobile">
+      <button
+        mat-icon-button
+        (click)="back()"
+      ><mat-icon>skip_previous</mat-icon></button>
+      <button
+        mat-icon-button
+        (click)="toggleShuffle()"
+      ><mat-icon [color]="shuffle ? 'warn' : null">shuffle</mat-icon></button>
+      <button
+        mat-icon-button
+        (click)="toggleLoop()"
+      ><mat-icon [color]="loop ? 'warn' : null">loop</mat-icon></button>
+      <button
+        mat-icon-button
+        (click)="skip()"
+      ><mat-icon>skip_next</mat-icon></button>
+    </div>
+  </mat-card>
+  <mat-card class="table-card-mobile">
+    <div class="header">
+      <mat-form-field appearance="outline" class="searchbar-wrapper-mobile">
         <mat-label>Search</mat-label>
         <mat-icon matPrefix>search</mat-icon>
         <input
@@ -40,96 +177,70 @@
           (keyup)="filterChanged()"
         />
       </mat-form-field>
-      <div class="buttons">
-        <button
-          mat-stroked-button
-          (click)="setRowDef('tracks')"
-        >Songs</button>
-        <button
-          mat-stroked-button
-          (click)="setRowDef('albums')"
-        >Albums</button>
-        <button
-          mat-stroked-button
-          (click)="setRowDef('artists')"
-        >Artists</button>
-        <button
-          mat-stroked-button
-          (click)="setRowDef('playlists')"
-        >Playlists</button>
-      </div>
-      <div class="play-buttons">
-        <button
-          mat-stroked-button
-          (click)="playAll()"
-        >Play All</button>
-        <button
-          mat-stroked-button
-          (click)="addTrack()"
-          *ngIf="rowDef === 'tracks'"
-        >Upload Song</button>
-        <button
-          mat-stroked-button
-          (click)="addTrackFromYoutube()"
-          *ngIf="rowDef === 'tracks'"
-        >Add Song From Youtube</button>
-        <button
-          mat-stroked-button
-          (click)="addPlaylist()"
-          *ngIf="rowDef === 'playlists'"
-        >New Playlist</button>
-      </div>
-      <div class="table-container">
-        <table
-          mat-table
-          class="track-table"
-          [dataSource]="dataSource"
-          matSort
-          (matSortChange)="sortChange($event)"
-        >
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-            <td mat-cell *matCellDef="let element">{{ element.name }}</td>
-          </ng-container>
-          <ng-container matColumnDef="artist">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Artist</th>
-            <td mat-cell *matCellDef="let element">{{ element.artist }}</td>
-          </ng-container>
-          <ng-container matColumnDef="album">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header class="header-align-right">Album</th>
-            <td mat-cell *matCellDef="let element">{{ element.album }}</td>
-          </ng-container>
-          <ng-container matColumnDef="options">
-            <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let element">
-              <button mat-icon-button (click)="$event.stopPropagation()" [matMenuTriggerFor]="menu">
-                <mat-icon>more_vert</mat-icon>
-              </button>
-              <mat-menu #menu="matMenu">
-                <button mat-menu-item *ngIf="rowDef==='tracks'" (click)="addTrackToPlaylist(element)">Add to Playlist</button>
-                <button mat-menu-item *ngIf="rowDef==='tracks'" (click)="updateTrack(element)">Update Track Info</button>
-                <button mat-menu-item (click)="delete(element)">Delete</button>
-              </mat-menu>
-            </td>
-          </ng-container>
-          <ng-container matColumnDef="tracks">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Tracks</th>
-            <td mat-cell *matCellDef="let element">{{ element.tracks ? element.tracks?.length : 0 }}</td>
-          </ng-container>
-          <ng-container matColumnDef="albums">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Albums</th>
-            <td mat-cell *matCellDef="let element">{{ element.albums ? element.albums?.length : 0 }}</td>
-          </ng-container>
-
-          <tr class="header-row" mat-header-row *matHeaderRowDef="columns; sticky: !loading"></tr>
-          <tr
-            mat-row
-            class="clickable-row"
-            *matRowDef="let row; columns: columns"
-            (click)="handleClick(row)"
-          ></tr>
-        </table>
+      <div class="header-buttons">
+        <button mat-stroked-button [matMenuTriggerFor]="options">Options</button>
+        <mat-menu #options>
+          <button mat-menu-item *ngIf="rowDef !== 'tracks'" (click)="setRowDef('tracks')">Songs</button>
+          <button mat-menu-item *ngIf="rowDef !== 'artists'" (click)="setRowDef('artists')">Artists</button>
+          <button mat-menu-item *ngIf="rowDef !== 'albums'" (click)="setRowDef('albums')">Albums</button>
+          <button mat-menu-item *ngIf="rowDef !== 'playlists'" (click)="setRowDef('playlists')">Playlists</button>
+          <button mat-menu-item *ngIf="rowDef === 'tracks'" (click)="addTrackFromYoutube()">Add Song From Youtube</button>
+          <button mat-menu-item *ngIf="rowDef === 'tracks'" (click)="addTrack()">Upload Song</button>
+          <button mat-menu-item *ngIf="rowDef === 'playlists'" (click)="addPlaylist()">New Playlist</button>
+        </mat-menu>
+        <button mat-stroked-button (click)="playAll()">Play All</button>
       </div>
     </div>
-  </div>
-</mat-card>
+    <div class="table-wrapper-mobile">
+      <table
+        mat-table
+        class="track-table-mobile"
+        [dataSource]="dataSource"
+        matSort
+        (matSortChange)="sortChange($event)"
+      >
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+          <td mat-cell *matCellDef="let element">{{ element.name }}</td>
+        </ng-container>
+        <ng-container matColumnDef="artist">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Artist</th>
+          <td mat-cell *matCellDef="let element">{{ element.artist }}</td>
+        </ng-container>
+        <ng-container matColumnDef="album">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="header-align-right">Album</th>
+          <td mat-cell *matCellDef="let element">{{ element.album }}</td>
+        </ng-container>
+        <ng-container matColumnDef="options">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let element">
+            <button mat-icon-button (click)="$event.stopPropagation()" [matMenuTriggerFor]="menu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item *ngIf="rowDef==='tracks'" (click)="addTrackToPlaylist(element)">Add to Playlist</button>
+              <button mat-menu-item *ngIf="rowDef==='tracks'" (click)="updateTrack(element)">Update Track Info</button>
+              <button mat-menu-item (click)="delete(element)">Delete</button>
+            </mat-menu>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="tracks">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Tracks</th>
+          <td mat-cell *matCellDef="let element">{{ element.tracks ? element.tracks?.length : 0 }}</td>
+        </ng-container>
+        <ng-container matColumnDef="albums">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Albums</th>
+          <td mat-cell *matCellDef="let element">{{ element.albums ? element.albums?.length : 0 }}</td>
+        </ng-container>
+
+        <tr class="header-row" mat-header-row *matHeaderRowDef="columns; sticky: !loading"></tr>
+        <tr
+          mat-row
+          class="clickable-row"
+          *matRowDef="let row; columns: columns"
+          (click)="handleClick(row)"
+        ></tr>
+      </table>
+    </div>
+  </mat-card>
+</div>

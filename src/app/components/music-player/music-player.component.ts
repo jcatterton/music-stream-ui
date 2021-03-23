@@ -1,27 +1,27 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {Track, UploadTrackRequest, YoutubeRequest} from "../../models/track";
-import { TrackService } from "../../services/track/track.service";
-import { SnackBarPanelClass, SnackbarService } from "../../services/snackbar/snackbar.service";
-import { MatDialog } from "@angular/material/dialog";
-import { AddTrackComponent } from "../add-track/add-track.component";
-import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
-import { AddPlaylistComponent } from "../add-playlist/add-playlist.component";
-import { PlaylistService } from "../../services/playlist/playlist.service";
-import { Playlist } from "../../models/playlist";
-import { MatTableDataSource } from "@angular/material/table";
-import { AddTrackToPlaylistComponent } from "../add-track-to-playlist/add-track-to-playlist.component";
-import { PlaylistInfoComponent } from "../playlist-info/playlist-info.component";
-import { MatSort } from "@angular/material/sort";
-import { Album } from "../../models/album";
-import { AlbumInfoComponent } from "../album-info/album-info.component";
-import { Artist } from "../../models/artist";
-import { ArtistInfoComponent } from "../artist-info/artist-info.component";
-import { Title } from "@angular/platform-browser";
-import { UpdateTrackComponent } from "../update-track/update-track.component";
-import { RowDef } from "../../mocks/rowdef";
-import { AddTrackFromYoutubeComponent } from "../add-track-from-youtube/add-track-from-youtube.component";
-import { MatInput } from "@angular/material/input";
-import { LoginService } from "../../services/login/login.service";
+import {TrackService} from "../../services/track/track.service";
+import {SnackBarPanelClass, SnackbarService} from "../../services/snackbar/snackbar.service";
+import {MatDialog} from "@angular/material/dialog";
+import {AddTrackComponent} from "../add-track/add-track.component";
+import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
+import {AddPlaylistComponent} from "../add-playlist/add-playlist.component";
+import {PlaylistService} from "../../services/playlist/playlist.service";
+import {Playlist} from "../../models/playlist";
+import {MatTableDataSource} from "@angular/material/table";
+import {AddTrackToPlaylistComponent} from "../add-track-to-playlist/add-track-to-playlist.component";
+import {PlaylistInfoComponent} from "../playlist-info/playlist-info.component";
+import {MatSort} from "@angular/material/sort";
+import {Album} from "../../models/album";
+import {AlbumInfoComponent} from "../album-info/album-info.component";
+import {Artist} from "../../models/artist";
+import {ArtistInfoComponent} from "../artist-info/artist-info.component";
+import {Title} from "@angular/platform-browser";
+import {UpdateTrackComponent} from "../update-track/update-track.component";
+import {RowDef} from "../../mocks/rowdef";
+import {AddTrackFromYoutubeComponent} from "../add-track-from-youtube/add-track-from-youtube.component";
+import {MatInput} from "@angular/material/input";
+import {LoginService} from "../../services/login/login.service";
 import {Router} from "@angular/router";
 
 @Component({
@@ -46,12 +46,13 @@ export class MusicPlayerComponent implements OnInit {
   artists: Artist[];
   firstLoad = true;
   loading = false;
+  mobile = false;
 
   @ViewChild('stream') set playerRef(ref: ElementRef<HTMLAudioElement>) {
-    this.$player = ref.nativeElement;
+    this.$player = ref?.nativeElement;
   }
   @ViewChild('filter') set filterRef(ref: ElementRef<MatInput>) {
-    this.$filter = ref.nativeElement;
+    this.$filter = ref?.nativeElement;
   }
   @ViewChild(MatSort) sort: MatSort;
 
@@ -66,6 +67,9 @@ export class MusicPlayerComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    if (/Android/i.test(navigator.userAgent)) {
+      this.mobile = true;
+    }
     this.loginService.validateToken().subscribe(() => {
       this.loadTracks();
       this.shuffle = false;
