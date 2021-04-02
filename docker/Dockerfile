@@ -10,5 +10,5 @@ FROM nginx:1.17.1-alpine
 COPY /docker/nginx.conf /etc/nginx/nginx.conf
 COPY /docker/default.conf /etc/nginx/conf.d/default.conf
 COPY /docker/routes.conf /etc/nginx/conf.d/routes/routes.conf
-COPY --from=build /usr/music-stream-ui/dist/music-stream-ui /usr/share/nginx/html
+COPY --from=build /usr/music-stream-ui/dist /usr/share/nginx/html
 EXPOSE 80

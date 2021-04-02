@@ -1,4 +1,4 @@
-<div #Desktop *ngIf="!mobile">
+<div class="desktop" *ngIf="!mobile" tabIndex="0" (keydown.space)="stream.paused ? stream.play() : stream.pause()">
   <mat-card class="table-card">
     <div class="spinner-wrapper" *ngIf="loading">
       <mat-spinner class="loading-spinner"></mat-spinner>
@@ -9,7 +9,13 @@
         <img class="album-art" src="https://www.wmhbradio.org/wp-content/uploads/2016/07/music-placeholder.png">
         <h2>{{ activeTrack?.artist }}</h2>
         <h3>{{ activeTrack?.album }}</h3>
-        <audio #stream controls (ended)="audioEnded()" [preload]="'auto'" [attr.src]="this.activeTrack ? (getActiveTrackUrl() | secure | async) : null"></audio>
+        <audio
+          #stream
+          controls
+          (ended)="audioEnded()"
+          [preload]="'auto'"
+          [attr.src]="this.activeTrack ? (getActiveTrackUrl() | secure | async) : null"
+        ></audio>
         <div class="player-buttons">
           <button
             mat-icon-button
@@ -136,7 +142,7 @@
   </mat-card>
 </div>
 
-<div #Mobile *ngIf="mobile">
+<div class="mobile" tabIndex="0" *ngIf="mobile" (dblclick)="stream.paused ? stream.play() : stream.pause()">
   <div class="spinner-wrapper" *ngIf="loading">
     <mat-spinner class="loading-spinner"></mat-spinner>
   </div>

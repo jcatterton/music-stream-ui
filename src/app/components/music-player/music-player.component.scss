@@ -163,6 +163,10 @@ audio:focus {
   outline: none;
 }
 
+.desktop:focus {
+  outline:0 !important;
+}
+
 // MOBILE
 
 .player-card-mobile {
@@ -215,4 +219,8 @@ audio:focus {
     height: 100%;
     width: 50%;
   }
+}
+
+.mobile:focus {
+  outline:0 !important;
 }
