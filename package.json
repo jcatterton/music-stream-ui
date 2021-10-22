@@ -1,9 +1,9 @@
 {
   "name": "music-stream-ui",
-  "version": "1.11.6",
+  "version": "1.11.7",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --proxy-config proxy.conf.json",
+    "start": "ng serve --proxy-config proxy.conf.json --base-href '/'",
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
