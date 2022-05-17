@@ -47,6 +47,18 @@ import { SecurePipe } from "./pipes/secure.pipe";
     OverlayModule
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [
+    LoginComponent,
+    AddTrackFromYoutubeComponent,
+    ConfirmationDialogComponent,
+    PlaylistInfoComponent,
+    ArtistInfoComponent,
+    AlbumInfoComponent,
+    AddTrackComponent,
+    AddTrackToPlaylistComponent,
+    UpdateTrackComponent,
+    AddPlaylistComponent
+  ]
 })
 export class AppModule { }

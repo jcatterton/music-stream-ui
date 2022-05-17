@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpService } from "../http/http.service";
-import { Track, YoutubeRequest } from "../../models/track";
+import {Track, UploadRequest, YoutubeRequest} from "../../models/track";
 import { Observable } from "rxjs";
+import {Video} from "../../models/video";
 
 @Injectable({
   providedIn: 'root'
@@ -37,6 +38,23 @@ export class TrackService {
     return `${this.baseURL}/track/${track.id}`
   }
 
+  getVideo(body: YoutubeRequest) {
+    return this.http.post(`${this.baseURL}/video`, body);
+  }
+
+  getStream(body: Video) {
+    return this.http.post(`${this.baseURL}/stream`, body);
+  }
+
+  convertStreamToAudio() {
+    return this.http.post(`${this.baseURL}/convert`, null);
+  }
+
+  uploadAudio(body: UploadRequest) {
+    return this.http.post(`${this.baseURL}/upload`, body);
+  }
+
+  // Deprecated
   uploadTrackFromYoutube(track: YoutubeRequest) {
     return this.http.post(`${this.baseURL}/youtube/track`, track);
   }

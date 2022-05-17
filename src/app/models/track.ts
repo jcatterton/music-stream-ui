@@ -19,3 +19,8 @@ export interface YoutubeRequest {
   album: string;
   youtubeLink: string;
 }
+
+export interface UploadRequest {
+  youtubeRequest: YoutubeRequest;
+  audioBytes: string;
+}

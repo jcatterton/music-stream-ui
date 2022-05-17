@@ -1,5 +1,5 @@
 import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {Track, UploadTrackRequest, YoutubeRequest} from "../../models/track";
+import {Track, UploadRequest, UploadTrackRequest, YoutubeRequest} from "../../models/track";
 import {TrackService} from "../../services/track/track.service";
 import {SnackBarPanelClass, SnackbarService} from "../../services/snackbar/snackbar.service";
 import {MatDialog} from "@angular/material/dialog";
@@ -23,6 +23,7 @@ import {AddTrackFromYoutubeComponent} from "../add-track-from-youtube/add-track-
 import {MatInput} from "@angular/material/input";
 import {LoginService} from "../../services/login/login.service";
 import {Router} from "@angular/router";
+import {Video} from "../../models/video";
 
 @Component({
   selector: 'app-music-player',
@@ -47,6 +48,7 @@ export class MusicPlayerComponent implements OnInit {
   firstLoad = true;
   loading = false;
   mobile = false;
+  loadingMessage = "";
 
   @ViewChild('stream') set playerRef(ref: ElementRef<HTMLAudioElement>) {
     this.$player = ref?.nativeElement;
@@ -275,31 +277,59 @@ export class MusicPlayerComponent implements OnInit {
           d.afterClosed().subscribe(response => {
             if (response) {
               this.loading = true;
-              this.trackService.uploadTrackFromYoutube(track).subscribe(() => {
-                this.loading = false;
-                this.snackBarService.showMessage("Track added successfully", SnackBarPanelClass.success);
-                this.loadTracks();
-              }, err => {
-                this.loading = false;
-                console.log(err);
-                this.snackBarService.showMessage("Error adding tracks", SnackBarPanelClass.fail)
-              })
+              this.aaa(track);
             }
           })
         } else {
           this.loading = true;
-          this.trackService.uploadTrackFromYoutube(track).subscribe(() => {
-            this.loading = false;
-            this.snackBarService.showMessage("Track added successfully", SnackBarPanelClass.success);
-            this.loadTracks();
-          }, err => {
-            this.loading = false;
-            console.log(err);
-            this.snackBarService.showMessage("Error adding tracks", SnackBarPanelClass.fail)
-          })
+          this.aaa(track);
         }
       }
     });
+  }
+
+  aaa(track: YoutubeRequest) {
+    this.loading = true;
+    this.loadingMessage = "Retrieving video information";
+
+    this.trackService.getVideo(track).subscribe(videoResponse => {
+      this.loadingMessage = "Retrieving stream information";
+      this.trackService.getStream(videoResponse as Video).subscribe(() => {
+        this.loadingMessage = "Converting video to audio";
+        this.trackService.convertStreamToAudio().subscribe(conversionResponse => {
+          this.loadingMessage = "Uploading audio to database";
+          const uploadRequest = {
+            youtubeRequest: track,
+            audioBytes: conversionResponse
+          } as UploadRequest
+          this.trackService.uploadAudio(uploadRequest).subscribe(() => {
+            this.snackBarService.showMessage("Track added successfully", SnackBarPanelClass.success);
+            this.loading = false;
+            this.loadingMessage = "";
+          }, err => {
+            console.error("Error uploading audio to database: " + err);
+            this.snackBarService.showMessage("Error uploading audio to database", SnackBarPanelClass.fail);
+            this.loading = false;
+            this.loadingMessage = "";
+          });
+        }, err => {
+          console.error("Error converting video to audio: " + err);
+          this.snackBarService.showMessage("Error converting video to audio", SnackBarPanelClass.fail);
+          this.loading = false;
+          this.loadingMessage = "";
+        });
+      }, err => {
+        console.error("Error retrieving stream information: " + err);
+        this.snackBarService.showMessage("Error retrieving stream information", SnackBarPanelClass.fail);
+        this.loading = false;
+        this.loadingMessage = "";
+      })
+    }, err => {
+      console.error("Error retrieving video information: " + err);
+      this.snackBarService.showMessage("Error retrieving video information", SnackBarPanelClass.fail);
+      this.loading = false;
+      this.loadingMessage = "";
+    })
   }
 
   delete(row): void {

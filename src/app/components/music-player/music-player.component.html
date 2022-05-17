@@ -2,6 +2,7 @@
   <mat-card class="table-card">
     <div class="spinner-wrapper" *ngIf="loading">
       <mat-spinner class="loading-spinner"></mat-spinner>
+      <span class="loading-message">{{ loadingMessage }}</span>
     </div>
     <div class="wrapper">
       <mat-card class="player-card">

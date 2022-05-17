@@ -1,6 +1,6 @@
 {
   "/api/*": {
-    "target": "http://192.168.1.15:30356",
+    "target": "http://localhost:8002",
     "secure": false,
     "changeOrigin": true,
     "pathRewrite": {
@@ -9,7 +9,7 @@
     "logLevel": "debug"
   },
   "/auth/*": {
-    "target": "http://192.168.1.15:30208",
+    "target": "http://192.168.68.108:30126",
     "secure": false,
     "changeOrigin": true,
     "pathRewrite": {
