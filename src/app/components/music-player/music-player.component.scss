@@ -120,6 +120,11 @@ th, td {
   right: 0;
   bottom: 0;
   z-index: 2;
+
+  span {
+    display: flex;
+    justify-content: center;
+  }
 }
 
 .loading-spinner {
