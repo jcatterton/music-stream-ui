@@ -3,6 +3,7 @@ import { AddTrackFromYoutubeComponent } from './add-track-from-youtube.component
 import { FormBuilder } from "@angular/forms";
 import { MatDialogRef } from "@angular/material/dialog";
 import { MockMatDialog } from "../../mocks/services";
+import { NO_ERRORS_SCHEMA } from '@angular/compiler';
 
 describe('AddPlaylistComponent', () => {
   let component: AddTrackFromYoutubeComponent;
@@ -15,7 +16,8 @@ describe('AddPlaylistComponent', () => {
       providers: [
         FormBuilder,
         { provide: MatDialogRef, useClass: MockMatDialog }
-      ]
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
     })
     .compileComponents();
   });

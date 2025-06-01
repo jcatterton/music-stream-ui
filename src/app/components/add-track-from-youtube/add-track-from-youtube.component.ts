@@ -11,6 +11,7 @@ import { YoutubeRequest } from "../../models/track";
 export class AddTrackFromYoutubeComponent implements OnInit {
   form: FormGroup;
   file: File;
+  link: string;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -22,7 +23,7 @@ export class AddTrackFromYoutubeComponent implements OnInit {
       name: "",
       artist: "",
       album: "",
-      link: ""
+      link: this.link ?? ""
     });
   }
 

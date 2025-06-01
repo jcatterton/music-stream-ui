@@ -19,6 +19,7 @@ import { UpdateTrackComponent } from "./components/update-track/update-track.com
 import { AddTrackFromYoutubeComponent } from "./components/add-track-from-youtube/add-track-from-youtube.component";
 import { LoginComponent } from "./components/login/login.component";
 import { SecurePipe } from "./pipes/secure.pipe";
+import { SearchYoutubeComponent } from './components/search-youtube/search-youtube.component';
 
 @NgModule({
   declarations: [
@@ -34,6 +35,7 @@ import { SecurePipe } from "./pipes/secure.pipe";
     UpdateTrackComponent,
     AddTrackFromYoutubeComponent,
     LoginComponent,
+    SearchYoutubeComponent,
     SecurePipe
   ],
   imports: [
@@ -58,7 +60,8 @@ import { SecurePipe } from "./pipes/secure.pipe";
     AddTrackComponent,
     AddTrackToPlaylistComponent,
     UpdateTrackComponent,
-    AddPlaylistComponent
+    AddPlaylistComponent,
+    SearchYoutubeComponent
   ]
 })
 export class AppModule { }

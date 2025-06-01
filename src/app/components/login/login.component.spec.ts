@@ -4,6 +4,7 @@ import { LoginComponent } from './login.component';
 import {FormBuilder} from "@angular/forms";
 import {MatDialogRef} from "@angular/material/dialog";
 import {MockMatDialog} from "../../mocks/services";
+import { NO_ERRORS_SCHEMA } from '@angular/compiler';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -16,7 +17,8 @@ describe('LoginComponent', () => {
       providers: [
         FormBuilder,
         { provide: MatDialogRef, useClass: MockMatDialog }
-      ]
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
     })
     .compileComponents();
   });

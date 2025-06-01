@@ -3,6 +3,7 @@ import { ArtistInfoComponent } from './artist-info.component';
 import { MockMatDialog } from "../../mocks/services";
 import { MatDialogRef } from "@angular/material/dialog";
 import { MockArtist } from "../../mocks/artists";
+import { NO_ERRORS_SCHEMA } from '@angular/compiler';
 
 describe('ArtistInfoComponent', () => {
   let component: ArtistInfoComponent;
@@ -13,7 +14,8 @@ describe('ArtistInfoComponent', () => {
       declarations: [ ArtistInfoComponent ],
       providers: [
         { provide: MatDialogRef, useClass: MockMatDialog }
-      ]
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
     })
     .compileComponents();
   });

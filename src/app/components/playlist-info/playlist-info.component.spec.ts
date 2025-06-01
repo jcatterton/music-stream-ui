@@ -10,6 +10,7 @@ import { MockTrack } from "../../mocks/tracks";
 import { MockPlaylist } from "../../mocks/playlists";
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 import { of, throwError } from "rxjs";
+import { NO_ERRORS_SCHEMA } from '@angular/compiler';
 
 describe('PlaylistInfoComponent', () => {
   let component: PlaylistInfoComponent;
@@ -29,7 +30,8 @@ describe('PlaylistInfoComponent', () => {
         { provide: MatDialog, useClass: MockMatDialog },
         { provide: SnackbarService, useClass: MockSnackBarService },
         { provide: MatDialogRef, useClass: MockMatDialog }
-      ]
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
     })
     .compileComponents();
   });

@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationDialogComponent } from './confirmation-dialog.component';
 import { MatDialogRef } from "@angular/material/dialog";
 import { MockMatDialog } from "../../mocks/services";
+import { NO_ERRORS_SCHEMA } from '@angular/compiler';
 
 describe('ConfirmationDialogComponent', () => {
   let component: ConfirmationDialogComponent;
@@ -14,7 +15,8 @@ describe('ConfirmationDialogComponent', () => {
       ],
       providers: [
         { provide: MatDialogRef, useClass: MockMatDialog }
-      ]
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
     })
     .compileComponents();
   });

@@ -3,6 +3,7 @@ import { AddPlaylistComponent } from './add-playlist.component';
 import { MatDialogRef } from "@angular/material/dialog";
 import { MockMatDialog } from "../../mocks/services";
 import { FormBuilder } from "@angular/forms";
+import { NO_ERRORS_SCHEMA } from '@angular/compiler';
 
 describe('AddPlaylistComponent', () => {
   let component: AddPlaylistComponent;
@@ -15,7 +16,8 @@ describe('AddPlaylistComponent', () => {
       providers: [
         FormBuilder,
         { provide: MatDialogRef, useClass: MockMatDialog }
-      ]
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
     })
     .compileComponents();
   });

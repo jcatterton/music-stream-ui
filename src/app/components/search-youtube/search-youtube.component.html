@@ -1,0 +1,20 @@
+<mat-dialog-content class="wrapper" *ngIf="searchResults.length === 0">
+    <mat-form-field [formGroup]="searchForm">
+        <mat-label>Query</mat-label>
+        <input matInput formControlName="query">
+    </mat-form-field>
+    <div class="buttons">
+        <button mat-stroked-button (click)="search()" [disabled]="searchForm.invalid">Search</button>
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-content class="results wrapper" *ngIf="searchResults.length !== 0">
+    <div class="results-panel" *ngFor="let result of searchResults" (click)="select(result)">
+        <img src="{{ result.thumbnails.default.url }}">
+        <div class="result-details">
+            {{ result.title }}
+            <br>
+            {{ result.channelTitle }}
+        </div>
+    </div>
+</mat-dialog-content>

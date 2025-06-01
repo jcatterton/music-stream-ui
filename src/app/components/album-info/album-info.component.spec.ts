@@ -3,7 +3,7 @@ import { AlbumInfoComponent } from './album-info.component';
 import { MockMatDialog } from "../../mocks/services";
 import { MatDialogRef } from "@angular/material/dialog";
 import { MockAlbum } from "../../mocks/albums";
-
+import { NO_ERRORS_SCHEMA } from '@angular/compiler';
 describe('AlbumInfoComponent', () => {
   let component: AlbumInfoComponent;
   let fixture: ComponentFixture<AlbumInfoComponent>;
@@ -13,7 +13,8 @@ describe('AlbumInfoComponent', () => {
       declarations: [ AlbumInfoComponent ],
       providers: [
         { provide: MatDialogRef, useClass: MockMatDialog }
-      ]
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
     })
     .compileComponents();
   });

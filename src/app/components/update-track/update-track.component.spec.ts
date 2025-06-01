@@ -3,6 +3,7 @@ import { UpdateTrackComponent } from './update-track.component';
 import { FormBuilder } from "@angular/forms";
 import { MatDialogRef } from "@angular/material/dialog";
 import { MockMatDialog } from "../../mocks/services";
+import { NO_ERRORS_SCHEMA } from '@angular/compiler';
 
 describe('UpdateTrackComponent', () => {
   let component: UpdateTrackComponent;
@@ -15,7 +16,8 @@ describe('UpdateTrackComponent', () => {
       providers: [
         FormBuilder,
         { provide: MatDialogRef, useClass: MockMatDialog }
-      ]
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
     })
       .compileComponents();
   });

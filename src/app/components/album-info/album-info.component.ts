@@ -23,6 +23,10 @@ export class AlbumInfoComponent {
     this.dialogRef.close({output: track, type: "single" });
   }
 
+  shuffleAll(): void {
+    this.dialogRef.close({output: this.album.tracks, type: "shuffle"});
+  }
+
   close(): void {
     this.dialogRef.close();
   }

@@ -7,7 +7,8 @@
     <div class="wrapper">
       <mat-card class="player-card">
         <h1>{{ activeTrack?.name }}</h1>
-        <img class="album-art" src="https://www.wmhbradio.org/wp-content/uploads/2016/07/music-placeholder.png">
+        <h3 *ngIf="!!playableTracks">{{ 'Track ' + (playableIndex + 1) + ' of ' + (playableTracks.length === 0 ? '1' : playableTracks.length) }}</h3>
+        <img class="album-art" src="{{ albumArtworkURL }}">
         <h2>{{ activeTrack?.artist }}</h2>
         <h3>{{ activeTrack?.album }}</h3>
         <audio
@@ -46,6 +47,7 @@
             placeholder="Search"
             class="searchbar"
             (keyup)="filterChanged()"
+            (keydown)="$event.stopPropagation()"
           />
         </mat-form-field>
         <div class="buttons">
@@ -73,6 +75,10 @@
           >Play All</button>
           <button
             mat-stroked-button
+            (click)="shuffleAll()"
+          >Shuffle All</button>
+          <button
+            mat-stroked-button
             (click)="addTrack()"
             *ngIf="rowDef === 'tracks'"
           >Upload Song</button>
@@ -81,6 +87,11 @@
             (click)="addTrackFromYoutube()"
             *ngIf="rowDef === 'tracks'"
           >Add Song From Youtube</button>
+          <button
+            mat-stroked-button
+            (click)="searchYoutube()"
+            *ngIf="rowDef === 'tracks'"
+          >Search Youtube</button>
           <button
             mat-stroked-button
             (click)="addPlaylist()"
@@ -149,6 +160,7 @@
   </div>
   <mat-card class="player-card-mobile">
     <h1>{{ activeTrack?.name }}</h1>
+    <img class="album-art" src="{{ albumArtworkURL }}">
     <h2>{{ activeTrack?.artist }}</h2>
     <h3>{{ activeTrack?.album }}</h3>
     <audio #stream controls (ended)="audioEnded()" [preload]="'auto'" [attr.src]="this.activeTrack ? (getActiveTrackUrl() | secure | async) : null"></audio>

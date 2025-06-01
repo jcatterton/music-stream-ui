@@ -24,6 +24,9 @@ import {MatInput} from "@angular/material/input";
 import {LoginService} from "../../services/login/login.service";
 import {Router} from "@angular/router";
 import {Video} from "../../models/video";
+import { SearchYoutubeComponent } from '../search-youtube/search-youtube.component';
+import * as albumArt from "album-art";
+import * as gis from "async-g-i-s";
 
 @Component({
   selector: 'app-music-player',
@@ -49,6 +52,7 @@ export class MusicPlayerComponent implements OnInit {
   loading = false;
   mobile = false;
   loadingMessage = "";
+  albumArtworkURL = "";
 
   @ViewChild('stream') set playerRef(ref: ElementRef<HTMLAudioElement>) {
     this.$player = ref?.nativeElement;
@@ -153,6 +157,7 @@ export class MusicPlayerComponent implements OnInit {
     this.$player.load();
     this.$player.play();
     this.titleService.setTitle(`${this.activeTrack.name} - ${this.activeTrack.artist}`);
+    this.getAlbumArtwork(this.activeTrack.artist, this.activeTrack.album);
   }
 
   getActiveTrackUrl(): string {
@@ -165,12 +170,18 @@ export class MusicPlayerComponent implements OnInit {
     this.playTrack(this.playableTracks[this.playableIndex]);
   }
 
+  shuffleAll(): void {
+    this.shuffle = true;
+    this.playAll();
+  }
+
   openPlaylistInfo(playlist: Playlist): void {
     const dialogRef = this.dialogService.open(PlaylistInfoComponent, { width: "700px", disableClose: false });
     dialogRef.componentInstance.playlist = playlist;
     dialogRef.afterClosed().subscribe(output => {
       if (output) {
-        if (output.type === "multiple") {
+        if (output.type === "multiple" || output.type === "shuffle") {
+          this.shuffle = output.type === "shuffle";
           this.playableTracks = output.output;
           this.playableIndex = 0;
           this.shuffle ? MusicPlayerComponent.shuffleTracks(this.playableTracks) : {};
@@ -191,7 +202,8 @@ export class MusicPlayerComponent implements OnInit {
     dialogRef.componentInstance.album = album;
     dialogRef.afterClosed().subscribe(output => {
       if (output) {
-        if (output.type === "multiple") {
+        if (output.type === "multiple" || output.type === "shuffle") {
+          this.shuffle = output.type === "shuffle";
           this.playableTracks = output.output;
           this.playableIndex = 0;
           this.shuffle ? MusicPlayerComponent.shuffleTracks(this.playableTracks) : {};
@@ -214,7 +226,8 @@ export class MusicPlayerComponent implements OnInit {
       if (output) {
         if (output.type === "album") {
           this.openAlbumInfo(output.output);
-        } else if (output.type === "tracks") {
+        } else if (output.type === "tracks" || output.type === "shuffle") {
+          this.shuffle = output.type === "shuffle";
           this.playableTracks = output.output;
           this.playableIndex = 0;
           this.shuffle ? MusicPlayerComponent.shuffleTracks(this.playableTracks) : {};
@@ -267,8 +280,10 @@ export class MusicPlayerComponent implements OnInit {
     });
   }
 
-  addTrackFromYoutube(): void {
+  addTrackFromYoutube(link?: string): void {
+    console.log(link)
     const dialogRef = this.dialogService.open(AddTrackFromYoutubeComponent, { width: "700px", disableClose: false });
+    dialogRef.componentInstance.link = link;
     dialogRef.afterClosed().subscribe((track: YoutubeRequest) => {
       if (track) {
         if (this.tracks.some(t => t.name.toLowerCase() === track.name.toLowerCase() && t.album.toLowerCase() === track.album.toLowerCase() && t.artist.toLowerCase() === track.artist.toLowerCase())) {
@@ -277,26 +292,26 @@ export class MusicPlayerComponent implements OnInit {
           d.afterClosed().subscribe(response => {
             if (response) {
               this.loading = true;
-              this.aaa(track);
+              this.handleSequentialYoutubeCalls(track);
             }
           })
         } else {
           this.loading = true;
-          this.aaa(track);
+          this.handleSequentialYoutubeCalls(track);
         }
       }
     });
   }
 
-  aaa(track: YoutubeRequest) {
+  handleSequentialYoutubeCalls(track: YoutubeRequest) {
     this.loading = true;
     this.loadingMessage = "Retrieving video information";
 
     this.trackService.getVideo(track).subscribe(videoResponse => {
       this.loadingMessage = "Retrieving stream information";
-      this.trackService.getStream(videoResponse as Video).subscribe(() => {
+      this.trackService.getStream(videoResponse as Video).subscribe((streamResponse: string) => {
         this.loadingMessage = "Converting video to audio";
-        this.trackService.convertStreamToAudio().subscribe(conversionResponse => {
+        this.trackService.convertStreamToAudio(streamResponse).subscribe(conversionResponse => {
           this.loadingMessage = "Uploading audio to database";
           const uploadRequest = {
             youtubeRequest: track,
@@ -304,6 +319,7 @@ export class MusicPlayerComponent implements OnInit {
           } as UploadRequest
           this.trackService.uploadAudio(uploadRequest).subscribe(() => {
             this.snackBarService.showMessage("Track added successfully", SnackBarPanelClass.success);
+            this.loadTracks();
             this.loading = false;
             this.loadingMessage = "";
           }, err => {
@@ -395,6 +411,13 @@ export class MusicPlayerComponent implements OnInit {
           this.snackBarService.showMessage("Error adding playlist", SnackBarPanelClass.fail)
         })
       }
+    });
+  }
+
+  searchYoutube(): void {
+    const dialogRef = this.dialogService.open(SearchYoutubeComponent, { width: "700px", disableClose: false });
+    dialogRef.afterClosed().subscribe(response => {
+      this.addTrackFromYoutube(response);
     });
   }
 
@@ -642,10 +665,10 @@ export class MusicPlayerComponent implements OnInit {
   }
 
   audioEnded(): void {
-    if (this.playableTracks.length > 0 && (this.playableIndex < this.playableTracks.length)) {
+    if (this.playableTracks.length > 0 && (this.playableIndex < this.playableTracks.length - 1)) {
       this.playableIndex++;
       this.playTrack(this.playableTracks[this.playableIndex]);
-    } else if (this.playableTracks.length > 0 && (this.playableIndex === this.playableTracks.length)) {
+    } else if (this.playableTracks.length > 0 && (this.playableIndex === this.playableTracks.length - 1)) {
       if (!this.loop) {
         this.playableTracks = [];
       } else {
@@ -731,5 +754,11 @@ export class MusicPlayerComponent implements OnInit {
     }
     body = "{" + body + "}";
     return body;
+  }
+
+  getAlbumArtwork(artist: string, album: string): void {
+    albumArt(artist, { album: album}).then(response => {
+      this.albumArtworkURL = response;
+    })
   }
 }

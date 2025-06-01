@@ -38,6 +38,10 @@ export class PlaylistInfoComponent implements OnInit {
     this.dialogRef.close({output: this.tracks, type: "multiple"});
   }
 
+  shuffleAll(): void {
+    this.dialogRef.close({output: this.tracks, type: "shuffle"});
+  }
+
   playOne(track: Track): void {
     this.dialogRef.close({output: track, type: "single" });
   }

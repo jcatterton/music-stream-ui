@@ -30,6 +30,7 @@ import { LoginService } from "../../services/login/login.service";
 import { RouterTestingModule } from "@angular/router/testing";
 import { Router } from "@angular/router";
 import { SecurePipe } from "../../pipes/secure.pipe";
+import { NO_ERRORS_SCHEMA } from '@angular/compiler';
 
 describe('MusicPlayerComponent', () => {
   let component: MusicPlayerComponent;
@@ -59,7 +60,8 @@ describe('MusicPlayerComponent', () => {
       imports: [
         RouterTestingModule.withRoutes([{ path: "**", component: class {} }]),
         HttpClientTestingModule,
-      ]
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
     })
     .compileComponents();
   }));

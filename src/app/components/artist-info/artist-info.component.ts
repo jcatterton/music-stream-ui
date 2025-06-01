@@ -23,6 +23,14 @@ export class ArtistInfoComponent {
     this.dialogRef.close({output: allTracks, type: "tracks"});
   }
 
+  shuffleAll(): void {
+    let allTracks = [];
+    this.artist.albums.forEach(a => {
+      allTracks = allTracks.concat(a.tracks);
+    });
+    this.dialogRef.close({output: allTracks, type: "shuffle"});
+  }
+
   selectAlbum(album: Album): void {
     this.dialogRef.close({output: album, type: "album"});
   }

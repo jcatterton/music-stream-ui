@@ -3,7 +3,8 @@
     <h2>{{ album?.name }}</h2>
     <h3>{{ album.tracks.length }} tracks</h3>
     <div class="buttons">
-      <button mat-stroked-button (click)="playAll()" [disabled]="album?.tracks === undefined || album?.tracks === null || album?.tracks.length === 0">Play All</button>
+      <button mat-stroked-button (click)="playAll()" [disabled]="!album?.tracks">Play All</button>
+      <button mat-stroked-button (click)="shuffleAll()" [disabled]="!album.tracks">Shuffle All</button>
       <button mat-stroked-button (click)="goToArtist()">Artist Details</button>
     </div>
     <div class="table-wrapper">

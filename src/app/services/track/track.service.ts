@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpService } from "../http/http.service";
-import {Track, UploadRequest, YoutubeRequest} from "../../models/track";
+import {ConversionRequest, Track, UploadRequest, YoutubeRequest} from "../../models/track";
 import { Observable } from "rxjs";
 import {Video} from "../../models/video";
 
@@ -46,8 +46,11 @@ export class TrackService {
     return this.http.post(`${this.baseURL}/stream`, body);
   }
 
-  convertStreamToAudio() {
-    return this.http.post(`${this.baseURL}/convert`, null);
+  convertStreamToAudio(body: string) {
+    const cr = {
+      bytes: body
+    } as ConversionRequest;
+    return this.http.post(`${this.baseURL}/convert`, cr);
   }
 
   uploadAudio(body: UploadRequest) {

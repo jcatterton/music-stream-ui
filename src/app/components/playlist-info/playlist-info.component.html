@@ -3,7 +3,8 @@
     <h2>{{ playlist?.name }}</h2>
     <h3>{{ playlist.tracks.length }} tracks</h3>
     <div class="buttons">
-      <button mat-stroked-button (click)="playAll()" [disabled]="tracks === undefined || tracks === null || tracks.length === 0">Play All</button>
+      <button mat-stroked-button (click)="playAll()" [disabled]="!tracks">Play All</button>
+      <button mat-stroked-button (click)="shuffleAll()" [disabled]="!tracks">Shuffle All</button>
       <button mat-stroked-button (click)="deletePlaylist()">Delete Playlist</button>
     </div>
     <div class="table-wrapper">

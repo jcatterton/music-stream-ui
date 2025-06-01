@@ -24,3 +24,7 @@ export interface UploadRequest {
   youtubeRequest: YoutubeRequest;
   audioBytes: string;
 }
+
+export interface ConversionRequest {
+  bytes: string;
+}
